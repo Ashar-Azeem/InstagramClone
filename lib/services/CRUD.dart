@@ -31,6 +31,7 @@ class DataBase {
     try {
       await postCollection.doc(postId).delete();
       await FirebaseStorage.instance.refFromURL(loc).delete();
+      print('sjdjshdjsdhshdshdjshdjsdjshdjshjs');
 
       return true;
     } catch (e) {
