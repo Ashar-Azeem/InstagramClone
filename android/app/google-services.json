@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "930369248205",
+    "project_id": "socialmediaapplication-phoenix",
+    "storage_bucket": "socialmediaapplication-phoenix.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:930369248205:android:fcb6e4d3873c3890510284",
+        "android_client_info": {
+          "package_name": "com.example.mysocialmediaapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2MNCuZTIsWblzd_Id_veuQGXpGnKMmU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
