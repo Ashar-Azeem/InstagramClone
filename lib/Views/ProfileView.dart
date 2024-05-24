@@ -349,7 +349,8 @@ class _ProfileViewState extends State<ProfileView>
                         ValueListenableBuilder(
                             valueListenable: PostsCollection(),
                             builder: (context, value, child) {
-                              final posts = PostsCollection().value;
+                              List<Posts> posts =
+                                  List.from(PostsCollection().value);
                               posts.sort((a, b) =>
                                   b.uploadDateTime.compareTo(a.uploadDateTime));
                               return Padding(

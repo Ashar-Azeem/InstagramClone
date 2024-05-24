@@ -119,9 +119,10 @@ class _ViewPostState extends State<ViewPost> {
                                                 loading = false;
                                               });
                                               if (value == true) {
+                                                PostsCollection().removePost(
+                                                    post: posts[index]);
+
                                                 setState(() {
-                                                  PostsCollection().removePost(
-                                                      post: posts[index]);
                                                   posts.removeAt(index);
                                                 });
                                               }
@@ -143,7 +144,6 @@ class _ViewPostState extends State<ViewPost> {
                                                         color: Colors.black),
                                                   )),
                                             ),
-                                            // PopupMenuItem(value: "changeAccountSecurity",child: ListTile(leading: Icon(Icons.),))
                                           ];
                                         },
                                       )

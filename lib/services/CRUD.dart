@@ -426,7 +426,7 @@ class PostsCollection extends ValueNotifier<List<Posts>> {
 
   void addPost({required Posts post}) {
     for (Posts p in value) {
-      //If same post is added again then the view become redundant
+      //If same post is added again then the view becomes redundant
       if (p.postId == post.postId) {
         return;
       }
