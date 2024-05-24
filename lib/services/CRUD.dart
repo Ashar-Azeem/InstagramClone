@@ -436,7 +436,6 @@ class PostsCollection extends ValueNotifier<List<Posts>> {
   }
 
   void removePost({required Posts post}) {
-    print('hrhrhr');
     value.remove(post);
     notifyListeners();
   }
