@@ -1,8 +1,5 @@
 import 'dart:typed_data';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
@@ -64,6 +61,7 @@ class _ProfileViewState extends State<ProfileView>
               color: Colors.white,
               onSelected: (String result) async {
                 if (result == 'logout') {
+                  PostsCollection().clear();
                   await AuthService().logout();
                   Navigator.of(context)
                       .pushNamedAndRemoveUntil(LoginRoute, (route) => false);
@@ -115,7 +113,7 @@ class _ProfileViewState extends State<ProfileView>
             )
           ]),
           FutureBuilder(
-            future: db.getPosts(user.userId),
+            future: db.getPosts(user.userId, true),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
@@ -353,6 +351,7 @@ class _ProfileViewState extends State<ProfileView>
                                   List.from(PostsCollection().value);
                               posts.sort((a, b) =>
                                   b.uploadDateTime.compareTo(a.uploadDateTime));
+
                               return Padding(
                                 padding:
                                     const EdgeInsets.only(left: 6, right: 6),

@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 
 class DataBase {
@@ -25,6 +26,56 @@ class DataBase {
       final users = await retreiveUsers(userName) as List<Users>;
       userStreamController.add(users);
     }
+  }
+
+  Future<List<Posts>> getForYouPagePosts(Users user) async {
+    List<Posts> suggestedPosts = [];
+    try {
+      // List<Users> myFollowing = [];
+      // List<Users> suggestedUsers = [];
+      // for (String u in user.following) {
+      //   myFollowing.add(await getUser(u) as Users);
+      // }
+
+      // for (Users u in myFollowing) {
+      //   for (String s in u.following) {
+      //     if (s != user.userId) {
+      //       suggestedUsers.add(await getUser(s) as Users);
+      //     }
+      //   }
+      // }
+      // List<Users> filtered =
+      //     suggestedUsers.where((u) => u.isPrivate == false).toList();
+
+      // List<Users> finalFilter = filtered.toSet().toList();
+
+      // for (Users u in finalFilter) {
+      //   suggestedPosts.addAll(await getPosts(u.userId, false) as List<Posts>);
+      // }
+
+      suggestedPosts.addAll(await getPublicAccoundPosts(user));
+
+      suggestedPosts.toSet().toList();
+
+      return suggestedPosts;
+    } catch (e) {
+      //
+    }
+    return suggestedPosts;
+  }
+
+  Future<List<Posts>> getPublicAccoundPosts(Users user) async {
+    List<Posts> publicPosts = [];
+    QuerySnapshot result =
+        await userCollection.where('privateAccount', isEqualTo: false).get();
+
+    for (QueryDocumentSnapshot documentSnapshot in result.docs) {
+      if (user.userId != documentSnapshot.id) {
+        publicPosts
+            .addAll(await getPosts(documentSnapshot.id, false) as List<Posts>);
+      }
+    }
+    return publicPosts;
   }
 
   Future<bool> deletePost(String postId, String loc) async {
@@ -58,7 +109,7 @@ class DataBase {
       //Empties the post collection list as each post would have the address of old profile picture
       PostsCollection().value = [];
       //readding the posts in PostCollection so that the UI contains updated data
-      await getPosts(user.userId);
+      await getPosts(user.userId, true);
       //Triggers the UI change where ever the old profile picture is used
       ProfilePicture().set(location: url);
     } catch (e) {
@@ -126,8 +177,9 @@ class DataBase {
             f2: following,
             isPriv: isPrivate,
             FCMtoken: token);
-
-        users.add(user);
+        if (user.userId != FirebaseAuth.instance.currentUser!.uid) {
+          users.add(user);
+        }
       }
       return users;
     } catch (e) {
@@ -252,7 +304,7 @@ class DataBase {
     return 0;
   }
 
-  Future<List<Posts>?> getPosts(String userId) async {
+  Future<List<Posts>?> getPosts(String userId, bool send) async {
     try {
       List<Posts> posts = [];
       QuerySnapshot result =
@@ -275,10 +327,13 @@ class DataBase {
         Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
             profileLoc, postLoc, content, dartDate);
         posts.add(post);
-        if (AuthService().getUser()!.uid == userId) {
+        print("userid: $userId");
+        if (send) {
+          print("inside sender if");
           PostsCollection().addPost(post: post);
         }
       }
+      print("post length in getposts section :${posts.length}");
       return posts;
     } catch (e) {
       //
@@ -393,6 +448,17 @@ class Users {
     isPrivate = isPriv;
     token = FCMtoken;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Users &&
+          runtimeType == other.runtimeType &&
+          userId == other.userId;
+
+  // Override hashCode based on id
+  @override
+  int get hashCode => userId.hashCode;
 }
 
 class Posts {
@@ -416,6 +482,17 @@ class Posts {
       this.postLoc,
       this.content,
       this.uploadDateTime);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Posts &&
+          runtimeType == other.runtimeType &&
+          postId == other.postId;
+
+  // Override hashCode based on id
+  @override
+  int get hashCode => postId.hashCode;
 }
 
 class PostsCollection extends ValueNotifier<List<Posts>> {
@@ -425,6 +502,7 @@ class PostsCollection extends ValueNotifier<List<Posts>> {
   factory PostsCollection() => _shared;
 
   void addPost({required Posts post}) {
+    print("length inside post collection :${value.length}");
     for (Posts p in value) {
       //If same post is added again then the view becomes redundant
       if (p.postId == post.postId) {
@@ -432,6 +510,11 @@ class PostsCollection extends ValueNotifier<List<Posts>> {
       }
     }
     value.add(post);
+    notifyListeners();
+  }
+
+  void clear() {
+    value.clear();
     notifyListeners();
   }
 

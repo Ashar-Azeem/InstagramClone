@@ -357,7 +357,7 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                     ]),
                   )
                 : FutureBuilder(
-                    future: db.getPosts(user.userId),
+                    future: db.getPosts(user.userId, false),
                     builder: (context, snapshot) {
                       switch (snapshot.connectionState) {
                         case ConnectionState.done:
