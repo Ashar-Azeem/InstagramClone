@@ -63,7 +63,6 @@ class _ProfileViewState extends State<ProfileView>
               onSelected: (String result) async {
                 if (result == 'logout') {
                   PostsCollection().clear();
-                  ProfilePicture().clear();
                   Following().clear();
                   await AuthService().logout();
                   Navigator.of(context)

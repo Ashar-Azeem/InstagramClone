@@ -538,10 +538,6 @@ class ProfilePicture extends ValueNotifier<String?> {
   void set({required String? location}) {
     value = location;
   }
-
-  void clear() {
-    value = null;
-  }
 }
 
 class Following extends ValueNotifier<List<String>> {

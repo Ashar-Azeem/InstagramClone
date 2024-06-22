@@ -24,6 +24,13 @@ class _MainUIState extends State<MainUI> {
 
   late List<Widget> navigation;
 
+  @override
+  void dispose() {
+    PostsCollection().clear();
+    Following().clear();
+    super.dispose();
+  }
+
   void initList() {
     navigation = [
       HomeView(user: user),
