@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
@@ -62,6 +63,8 @@ class _ProfileViewState extends State<ProfileView>
               onSelected: (String result) async {
                 if (result == 'logout') {
                   PostsCollection().clear();
+                  ProfilePicture().clear();
+                  Following().clear();
                   await AuthService().logout();
                   Navigator.of(context)
                       .pushNamedAndRemoveUntil(LoginRoute, (route) => false);
@@ -234,12 +237,17 @@ class _ProfileViewState extends State<ProfileView>
                               onTap: () {},
                               child: Column(
                                 children: [
-                                  Text(
-                                    (user.following.length).toString(),
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
+                                  ValueListenableBuilder(
+                                    valueListenable: Following(),
+                                    builder: (context, value, child) {
+                                      return Text(
+                                        (user.following.length).toString(),
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white),
+                                      );
+                                    },
                                   ),
                                   const Text(
                                     "Following",

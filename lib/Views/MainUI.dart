@@ -48,7 +48,9 @@ class _MainUIState extends State<MainUI> {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
             user = snapshot.data as Users;
+            //Assign value to valuenotifier so that they could be used in UI
             ProfilePicture().set(location: user.imageLoc);
+            Following().updateFollowing(user.following);
             initList();
             return Scaffold(
                 body: PageView(

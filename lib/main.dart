@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/LoginView.dart';
 import 'package:mysocialmediaapp/Views/MainUI.dart';
 import 'package:mysocialmediaapp/Views/RegistrationView.dart';
-import 'package:mysocialmediaapp/utilities/Provider.dart';
+
 import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
-import 'package:provider/provider.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(
-    create: (_) => AppStateModel(),
-    child: MaterialApp(
+  runApp(
+    MaterialApp(
       title: 'Social media app',
       theme: ThemeData.dark()
           .copyWith(scaffoldBackgroundColor: mobileBackgroundColor),
@@ -22,7 +20,7 @@ void main() {
         MainUIRoute: (context) => const MainUI()
       },
     ),
-  ));
+  );
 }
 
 class Main extends StatelessWidget {

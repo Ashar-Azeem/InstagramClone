@@ -218,13 +218,16 @@ class DataBase {
 
       visitedFollowers.add(ownerUser.userId);
       ownerFollowing.add(user.userId);
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentReference visitedUserRef = userCollection.doc(user.userId);
+        DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
 
-      DocumentReference visitedUserRef = userCollection.doc(user.userId);
-      DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
+        transaction.update(visitedUserRef, {'followers': visitedFollowers});
 
-      await visitedUserRef.update({'followers': visitedFollowers});
+        transaction.update(ownerUserRef, {'following': ownerFollowing});
 
-      await ownerUserRef.update({'following': ownerFollowing});
+        Following().updateFollowing(ownerFollowing);
+      });
     } catch (e) {
       //
     }
@@ -238,12 +241,16 @@ class DataBase {
       visitedFollowers.remove(ownerUser.userId);
       ownerFollowing.remove(user.userId);
 
-      DocumentReference visitedUserRef = userCollection.doc(user.userId);
-      DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentReference visitedUserRef = userCollection.doc(user.userId);
+        DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
 
-      await visitedUserRef.update({'followers': visitedFollowers});
+        transaction.update(visitedUserRef, {'followers': visitedFollowers});
 
-      await ownerUserRef.update({'following': ownerFollowing});
+        transaction.update(ownerUserRef, {'following': ownerFollowing});
+
+        Following().updateFollowing(ownerFollowing);
+      });
     } catch (e) {
       //
     }
@@ -502,7 +509,6 @@ class PostsCollection extends ValueNotifier<List<Posts>> {
   factory PostsCollection() => _shared;
 
   void addPost({required Posts post}) {
-    print("length inside post collection :${value.length}");
     for (Posts p in value) {
       //If same post is added again then the view becomes redundant
       if (p.postId == post.postId) {
@@ -531,5 +537,27 @@ class ProfilePicture extends ValueNotifier<String?> {
 
   void set({required String? location}) {
     value = location;
+  }
+
+  void clear() {
+    value = null;
+  }
+}
+
+class Following extends ValueNotifier<List<String>> {
+  //singleton class so only instance exists
+  Following._sharedInstance() : super([]);
+  static final Following _shared = Following._sharedInstance();
+  factory Following() => _shared;
+
+  void updateFollowing(List<String> following) {
+    value.clear();
+    value = following.map((str) => str).toList();
+    notifyListeners();
+  }
+
+  void clear() {
+    value.clear();
+    notifyListeners();
   }
 }

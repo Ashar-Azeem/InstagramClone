@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
-import 'package:mysocialmediaapp/utilities/Provider.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
-import 'package:provider/provider.dart';
 
 class VisitingProfileView extends StatefulWidget {
   final Users ownerUser;
@@ -17,7 +15,6 @@ class VisitingProfileView extends StatefulWidget {
 }
 
 class _VisitingProfileViewState extends State<VisitingProfileView> {
-  bool loading = false;
   DataBase db = DataBase();
   late List<Posts> posts;
   String totalPosts = "0";
@@ -87,16 +84,12 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                               color: Colors.white, // Border color
                               width: 1.0, // Border width
                             )),
-                        child: loading == true
-                            ? const CircularProgressIndicator(
-                                color: Colors.blueAccent,
-                              )
-                            : const CircleAvatar(
-                                backgroundColor: Colors.black,
-                                backgroundImage:
-                                    AssetImage('assets/blankprofile.png'),
-                                radius: 45,
-                              ),
+                        child: const CircleAvatar(
+                          backgroundColor: Colors.black,
+                          backgroundImage:
+                              AssetImage('assets/blankprofile.png'),
+                          radius: 45,
+                        ),
                       )
                     : Container(
                         width: 85.0,
@@ -107,15 +100,11 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                               color: Colors.white, // Border color
                               width: 1.0, // Border width
                             )),
-                        child: loading == true
-                            ? const CircularProgressIndicator(
-                                color: Colors.blueAccent,
-                              )
-                            : CircleAvatar(
-                                backgroundColor: Colors.black,
-                                backgroundImage: NetworkImage(user.imageLoc!),
-                                radius: 45,
-                              ),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black,
+                          backgroundImage: NetworkImage(user.imageLoc!),
+                          radius: 45,
+                        ),
                       ),
                 InkWell(
                   onTap: () {},
@@ -221,8 +210,6 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                         if (checkFollowers(ownerUser.following)) {
                           removeRelationship(user, ownerUser, db).then((value) {
                             if (value) {
-                              Provider.of<AppStateModel>(context, listen: false)
-                                  .updateRebuildState(true);
                               setState(() {
                                 //Updates the UI
                               });
@@ -231,8 +218,6 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                         } else {
                           addRelationship(user, ownerUser, db).then((value) {
                             if (value) {
-                              Provider.of<AppStateModel>(context, listen: false)
-                                  .updateRebuildState(true);
                               setState(() {
                                 //updates the UI
                               });
