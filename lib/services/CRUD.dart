@@ -31,32 +31,8 @@ class DataBase {
   Future<List<Posts>> getForYouPagePosts(Users user) async {
     List<Posts> suggestedPosts = [];
     try {
-      // List<Users> myFollowing = [];
-      // List<Users> suggestedUsers = [];
-      // for (String u in user.following) {
-      //   myFollowing.add(await getUser(u) as Users);
-      // }
-
-      // for (Users u in myFollowing) {
-      //   for (String s in u.following) {
-      //     if (s != user.userId) {
-      //       suggestedUsers.add(await getUser(s) as Users);
-      //     }
-      //   }
-      // }
-      // List<Users> filtered =
-      //     suggestedUsers.where((u) => u.isPrivate == false).toList();
-
-      // List<Users> finalFilter = filtered.toSet().toList();
-
-      // for (Users u in finalFilter) {
-      //   suggestedPosts.addAll(await getPosts(u.userId, false) as List<Posts>);
-      // }
-
       suggestedPosts.addAll(await getPublicAccoundPosts(user));
-
       suggestedPosts.toSet().toList();
-
       return suggestedPosts;
     } catch (e) {
       //
@@ -69,6 +45,7 @@ class DataBase {
     QuerySnapshot result =
         await userCollection.where('privateAccount', isEqualTo: false).get();
 
+    //Below is taking alot of time because it is retreiving posts from all public accounts
     for (QueryDocumentSnapshot documentSnapshot in result.docs) {
       if (user.userId != documentSnapshot.id) {
         publicPosts
@@ -334,13 +311,10 @@ class DataBase {
         Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
             profileLoc, postLoc, content, dartDate);
         posts.add(post);
-        print("userid: $userId");
         if (send) {
-          print("inside sender if");
           PostsCollection().addPost(post: post);
         }
       }
-      print("post length in getposts section :${posts.length}");
       return posts;
     } catch (e) {
       //

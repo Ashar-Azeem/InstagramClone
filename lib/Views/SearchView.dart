@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
+import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 
 class SearchView extends StatefulWidget {
@@ -41,7 +42,6 @@ class _SearchViewState extends State<SearchView>
                 backgroundColor: Colors.grey.shade900,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50)),
-                // Remove tap effect
               ),
               onPressed: () {
                 Navigator.push(
@@ -90,12 +90,12 @@ class _SearchViewState extends State<SearchView>
                           (context, index) {
                             return InkWell(
                                 onTap: () {
-                                  // Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //       builder: (context) => ViewPost(
-                                  //           posts: posts, index1: index),
-                                  //     ));
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ViewPost(
+                                            posts: posts, index1: index),
+                                      ));
                                 },
                                 child: Container(
                                     width: oneContainerWidth,
