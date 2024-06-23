@@ -68,7 +68,7 @@ class _ProfileViewState extends State<ProfileView>
                   Navigator.of(context)
                       .pushNamedAndRemoveUntil(LoginRoute, (route) => false);
                 } else if (result == 'isprivate') {
-                  changePrivacy(user, db).then(
+                  changePrivacy(user, db, PostsCollection().value).then(
                     (value) async {
                       if (value == "success") {
                         setState(() {
@@ -214,7 +214,9 @@ class _ProfileViewState extends State<ProfileView>
                               ),
                             ),
                             InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                print(user.publicPosts!);
+                              },
                               child: Column(
                                 children: [
                                   Text(

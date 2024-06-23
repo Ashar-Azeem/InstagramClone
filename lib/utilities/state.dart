@@ -69,8 +69,8 @@ Future<String> postProcess(
     post = await compressImage(post);
     String url = await uploadImageGetUrl(post, 'posts', true);
 
-    await DataBase()
-        .addPost(user.userId, user.userName, user.imageLoc, url, content, 0, 0);
+    await DataBase().addPost(
+        user.userId, user.userName, user.imageLoc, url, content, 0, 0, user);
 
     return 'success';
   } catch (e) {
@@ -84,7 +84,7 @@ Future<Users?> updatePorfileProcess(
   try {
     profilePicture = await compressImage(profilePicture);
     await DataBase().updateProfilePicture(user, profilePicture);
-    final user1 = await DataBase().getUser(user.userId);
+    final user1 = await DataBase().getUser(user.userId, false);
     return user1;
   } catch (e) {
     //
@@ -92,9 +92,9 @@ Future<Users?> updatePorfileProcess(
   return null;
 }
 
-Future<String> changePrivacy(Users user, DataBase db) async {
+Future<String> changePrivacy(Users user, DataBase db, List<Posts> posts) async {
   try {
-    await db.changeAccountSecurity(user);
+    await db.changeAccountSecurity(user, posts);
     print('success');
     return "success";
   } catch (e) {

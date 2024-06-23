@@ -50,7 +50,7 @@ class _MainUIState extends State<MainUI> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: db.getUser(FirebaseAuth.instance.currentUser!.uid),
+      future: db.getUser(FirebaseAuth.instance.currentUser!.uid, true),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
