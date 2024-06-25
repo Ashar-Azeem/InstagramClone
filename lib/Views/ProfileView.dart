@@ -128,44 +128,45 @@ class _ProfileViewState extends State<ProfileView>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            user.imageLoc == null
-                                ? Container(
-                                    width: 85.0,
-                                    height: 85.0,
-                                    decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white, // Border color
-                                          width: 1.0, // Border width
-                                        )),
-                                    child: const CircleAvatar(
-                                      backgroundColor: Colors.black,
-                                      backgroundImage:
-                                          AssetImage('assets/blankprofile.png'),
-                                      radius: 45,
-                                    ),
-                                  )
-                                : ValueListenableBuilder(
-                                    valueListenable: ProfilePicture(),
-                                    builder: (context, value, child) {
-                                      return Container(
-                                        width: 85.0,
-                                        height: 85.0,
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color:
-                                                  Colors.white, // Border color
-                                              width: 1.0, // Border width
-                                            )),
-                                        child: CircleAvatar(
-                                          backgroundColor: Colors.black,
-                                          backgroundImage: NetworkImage(value!),
-                                          radius: 45,
-                                        ),
-                                      );
-                                    },
-                                  ),
+                            ValueListenableBuilder(
+                                valueListenable: ProfilePicture(),
+                                builder: (context, value, child) {
+                                  return user.imageLoc == null
+                                      ? Container(
+                                          width: 85.0,
+                                          height: 85.0,
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors
+                                                    .white, // Border color
+                                                width: 1.0, // Border width
+                                              )),
+                                          child: const CircleAvatar(
+                                            backgroundColor: Colors.black,
+                                            backgroundImage: AssetImage(
+                                                'assets/blankprofile.png'),
+                                            radius: 45,
+                                          ),
+                                        )
+                                      : Container(
+                                          width: 85.0,
+                                          height: 85.0,
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors
+                                                    .white, // Border color
+                                                width: 1.0, // Border width
+                                              )),
+                                          child: CircleAvatar(
+                                            backgroundColor: Colors.black,
+                                            backgroundImage:
+                                                NetworkImage(value!),
+                                            radius: 45,
+                                          ),
+                                        );
+                                }),
                             InkWell(
                               onTap: () {},
                               child: Column(
@@ -214,9 +215,7 @@ class _ProfileViewState extends State<ProfileView>
                               ),
                             ),
                             InkWell(
-                              onTap: () {
-                                print(user.publicPosts!);
-                              },
+                              onTap: () {},
                               child: Column(
                                 children: [
                                   Text(
@@ -381,7 +380,11 @@ class _ProfileViewState extends State<ProfileView>
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) => ViewPost(
-                                                  posts: posts, index1: index),
+                                                posts: posts,
+                                                index1: index,
+                                                personal: true,
+                                                user: user,
+                                              ),
                                             ));
                                       },
                                       child: Container(

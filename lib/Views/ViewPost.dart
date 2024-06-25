@@ -1,12 +1,23 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:mysocialmediaapp/utilities/state.dart';
 
 class ViewPost extends StatefulWidget {
+  final Users user;
   final List<Posts> posts;
   final int index1;
-  const ViewPost({super.key, required this.posts, required this.index1});
+  final bool personal;
+  const ViewPost(
+      {super.key,
+      required this.posts,
+      required this.index1,
+      required this.personal,
+      required this.user});
 
   @override
   State<ViewPost> createState() => _ViewPostState();
@@ -19,11 +30,14 @@ class _ViewPostState extends State<ViewPost> {
   late int index1;
   late double size;
   late ScrollController _controller;
+  late bool personalCheck;
   @override
   void initState() {
     super.initState();
+
     posts = widget.posts;
-    seeMore = List.generate(posts.length, (index) => false);
+    seeMore = List.filled(posts.length, false);
+    personalCheck = widget.personal;
     index1 = widget.index1;
     _controller = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -46,11 +60,21 @@ class _ViewPostState extends State<ViewPost> {
       appBar: AppBar(
           backgroundColor: mobileBackgroundColor,
           forceMaterialTransparency: true,
-          title: const Text(
-            "Posts",
-            style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-          )),
+          title: personalCheck
+              ? const Text(
+                  "Posts",
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                )
+              : const Text(
+                  "Explore",
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                )),
       body: loading == true
           ? const LinearProgressIndicator(
               color: blueColor,
@@ -87,19 +111,47 @@ class _ViewPostState extends State<ViewPost> {
                                             color: Colors.white, // Border color
                                             width: 1.0, // Border width
                                           )),
-                                      child: CircleAvatar(
-                                        backgroundColor: Colors.black,
-                                        backgroundImage:
-                                            NetworkImage(posts[index].profLoc!),
-                                        radius: 30,
-                                      ),
+                                      child: posts[index].profLoc == null
+                                          ? const CircleAvatar(
+                                              backgroundColor: Colors.black,
+                                              backgroundImage: AssetImage(
+                                                  'assets/blankprofile.png'),
+                                              radius: 30,
+                                            )
+                                          : CircleAvatar(
+                                              backgroundColor: Colors.black,
+                                              backgroundImage: NetworkImage(
+                                                  posts[index].profLoc!),
+                                              radius: 30,
+                                            ),
                                     ),
-                                    Text(
-                                      "  ${posts[index].userName}",
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500),
-                                    ),
+                                    personalCheck
+                                        ? Text(
+                                            "  ${posts[index].userName}",
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500),
+                                          )
+                                        : TextButton(
+                                            onPressed: () async {
+                                              Users user = await DataBase()
+                                                  .getUser(posts[index].userId,
+                                                      false) as Users;
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          VisitingProfileView(
+                                                              user: user,
+                                                              ownerUser: widget
+                                                                  .user)));
+                                            },
+                                            child: Text(
+                                                "  ${posts[index].userName}",
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.w500)))
                                   ],
                                 ),
                                 AuthService().getUser()!.uid ==
@@ -147,7 +199,77 @@ class _ViewPostState extends State<ViewPost> {
                                           ];
                                         },
                                       )
-                                    : const SizedBox.shrink()
+                                    : Padding(
+                                        padding: EdgeInsets.only(
+                                            right: (screenWidth / 100) * 3.5),
+                                        child: InkWell(
+                                            onTap: () async {
+                                              print("hehehe");
+                                              DataBase db = DataBase();
+                                              Users otherUser =
+                                                  await db.getUser(
+                                                      posts[index].userId,
+                                                      false) as Users;
+                                              if (widget.user.following
+                                                  .contains(
+                                                      posts[index].userId)) {
+                                                removeRelationship(otherUser,
+                                                        widget.user, db)
+                                                    .then((value) {
+                                                  if (value) {
+                                                    setState(() {
+                                                      //Updates the UI
+                                                    });
+                                                  }
+                                                });
+                                              } else {
+                                                addRelationship(otherUser,
+                                                        widget.user, db)
+                                                    .then((value) {
+                                                  if (value) {
+                                                    setState(() {
+                                                      //updates the UI
+                                                    });
+                                                  }
+                                                });
+                                              }
+                                            },
+                                            child: Container(
+                                              height: 33,
+                                              width: 110,
+                                              decoration: BoxDecoration(
+                                                color: mobileBackgroundColor,
+                                                border: Border.all(
+                                                    color: Colors.white),
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                              ),
+                                              child: Center(
+                                                  child: widget.user.following
+                                                          .contains(posts[index]
+                                                              .userId)
+                                                      ? const Text(
+                                                          "Following",
+                                                          style: TextStyle(
+                                                              fontSize: 15,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        )
+                                                      : const Text(
+                                                          "Follow",
+                                                          style: TextStyle(
+                                                              fontSize: 15,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        )),
+                                            )),
+                                      ),
                               ]),
                           Padding(
                             padding: const EdgeInsets.only(top: 7),

@@ -372,6 +372,8 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                                               builder: (context) => ViewPost(
                                                 posts: posts,
                                                 index1: index,
+                                                personal: false,
+                                                user: ownerUser,
                                               ),
                                             ));
                                       },

@@ -61,6 +61,7 @@ class _AddPostViewState extends State<AddPostView>
                               postProcess(post!, user, content1, context)
                                   .then((result) {
                                 setState(() {
+                                  content.text = '';
                                   loading = false;
                                 });
                                 if (result == 'success') {

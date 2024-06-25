@@ -31,15 +31,16 @@ class DataBase {
     }
   }
 
-  Future<List<Posts>> getForYouPagePosts(Users user) async {
+  Future<List<Posts>> getForYouPagePosts(List<String> publicPosts) async {
     List<Posts> suggestedPosts = [];
-    for (String s in user.publicPosts!) {
+    for (String s in publicPosts) {
       Posts? post = await getPost(s);
       if (post != null &&
           post.userId != FirebaseAuth.instance.currentUser!.uid) {
         suggestedPosts.add(post);
       }
     }
+    suggestedPosts.sort((a, b) => b.uploadDateTime.compareTo(a.uploadDateTime));
 
     return suggestedPosts;
   }
@@ -308,7 +309,7 @@ class DataBase {
       if (!user.isPrivate) {
         List<String> publicPosts = await getPublicPostsList();
         publicPosts.add(doc.id);
-        await updatePublicPostsList(user.publicPosts!);
+        await updatePublicPostsList(publicPosts);
       }
       PostsCollection().addPost(post: post);
     } catch (e) {
