@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
@@ -133,13 +133,35 @@ class _SearchViewState extends State<SearchView>
                   );
                 }
                 return InkWell(
-                    onTap: () {
+                    onTap: () async {
+                      Posts post = documents[index];
+                      List<Posts> sublist = documents
+                          .where((element) =>
+                              element.userId == documents[index].userId)
+                          .toList();
+
+                      var range = 12;
+                      var length = sublist.length;
+                      if (length < range) {
+                        for (var i = 0; i < range - length; i++) {
+                          var l = documents
+                              .where((element) => !sublist.contains(element))
+                              .toList();
+                          var element = Random().nextInt(l.length);
+                          sublist.add(l[element]);
+                        }
+                      }
+                      sublist.removeWhere(
+                          (element) => element.postId == post.postId);
+                      sublist.shuffle();
+                      sublist.insert(0, post);
+
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => ViewPost(
-                              posts: documents,
-                              index1: index,
+                              posts: sublist,
+                              index1: 0,
                               personal: false,
                               user: user,
                             ),
