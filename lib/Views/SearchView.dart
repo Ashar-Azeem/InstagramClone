@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';

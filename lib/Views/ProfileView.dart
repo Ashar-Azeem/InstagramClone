@@ -2,12 +2,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mysocialmediaapp/Views/LoginView.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 class ProfileView extends StatefulWidget {
   final Users user;
@@ -65,8 +67,14 @@ class _ProfileViewState extends State<ProfileView>
                   PostsCollection().clear();
                   Following().clear();
                   await AuthService().logout();
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil(LoginRoute, (route) => false);
+                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return const LoginView();
+                      },
+                    ),
+                    (_) => false,
+                  );
                 } else if (result == 'isprivate') {
                   changePrivacy(user, db, PostsCollection().value).then(
                     (value) async {
@@ -359,6 +367,7 @@ class _ProfileViewState extends State<ProfileView>
                                   List.from(PostsCollection().value);
                               posts.sort((a, b) =>
                                   b.uploadDateTime.compareTo(a.uploadDateTime));
+                              print(posts.length);
 
                               return Padding(
                                 padding:

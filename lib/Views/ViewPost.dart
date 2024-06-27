@@ -204,7 +204,6 @@ class _ViewPostState extends State<ViewPost> {
                                             right: (screenWidth / 100) * 3.5),
                                         child: InkWell(
                                             onTap: () async {
-                                              print("hehehe");
                                               DataBase db = DataBase();
                                               Users otherUser =
                                                   await db.getUser(
