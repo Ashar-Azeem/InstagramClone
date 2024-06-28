@@ -377,6 +377,12 @@ class DataBase {
     return null;
   }
 
+  Future<List<String>> getStories() async {
+    await Future.delayed(const Duration(seconds: 2));
+    var l = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    return l;
+  }
+
   Future<Users?> getUser(String userId, bool getPublicPosts) async {
     try {
       DocumentSnapshot result = await userCollection.doc(userId).get();

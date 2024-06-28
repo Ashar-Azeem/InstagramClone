@@ -1,15 +1,13 @@
+// ignore_for_file: file_names
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mysocialmediaapp/Views/LoginView.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
-import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 class ProfileView extends StatefulWidget {
   final Users user;
@@ -306,10 +304,12 @@ class _ProfileViewState extends State<ProfileView>
                                     height: 30,
                                     width: 175,
                                     decoration: BoxDecoration(
-                                      color:
-                                          const Color.fromARGB(255, 38, 38, 38),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
+                                        color:
+                                            const Color.fromARGB(255, 8, 8, 8),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        border:
+                                            Border.all(color: Colors.white)),
                                     child: const Center(
                                       child: Text(
                                         "Edit profile",
@@ -326,10 +326,12 @@ class _ProfileViewState extends State<ProfileView>
                                     height: 30,
                                     width: 175,
                                     decoration: BoxDecoration(
-                                      color:
-                                          const Color.fromARGB(255, 38, 38, 38),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
+                                        color:
+                                            const Color.fromARGB(255, 8, 8, 8),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        border:
+                                            Border.all(color: Colors.white)),
                                     child: const Center(
                                       child: Text(
                                         "Share profile",

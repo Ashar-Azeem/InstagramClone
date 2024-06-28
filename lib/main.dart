@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mysocialmediaapp/Views/LoginView.dart';
 import 'package:mysocialmediaapp/Views/MainUI.dart';
 import 'package:mysocialmediaapp/Views/RegistrationView.dart';
-
 import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   runApp(
     MaterialApp(
       title: 'Social media app',
