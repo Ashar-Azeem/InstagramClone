@@ -54,6 +54,7 @@ class _MainUIState extends State<MainUI> {
             //Assign value to valuenotifier so that they could be used in UI
             ProfilePicture().set(location: user.imageLoc);
             Following().updateFollowing(user.following);
+            Followers().updateFollowers(user.followers);
             initList();
             return ValueListenableBuilder(
                 valueListenable: ProfilePicture(),

@@ -281,6 +281,33 @@ class DataBase {
     }
   }
 
+  Future<bool> removeFollower(Users visitingUser, Users ownerUser) async {
+    try {
+      List<String> visiterFollowing = visitingUser.following;
+      List<String> ownerFollowers = ownerUser.followers;
+
+      visiterFollowing.remove(ownerUser.userId);
+      ownerFollowers.remove(visitingUser.userId);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentReference visitedUserRef =
+            userCollection.doc(visitingUser.userId);
+        DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
+
+        transaction.update(visitedUserRef, {'following': visiterFollowing});
+
+        transaction.update(ownerUserRef, {'followers': ownerFollowers});
+
+        Followers().updateFollowers(ownerFollowers);
+      });
+
+      return true;
+    } catch (_) {
+      //
+    }
+    return false;
+  }
+
   Future<void> addPost(
       String userId,
       String userName,
@@ -595,7 +622,7 @@ class ProfilePicture extends ValueNotifier<String?> {
 }
 
 class Following extends ValueNotifier<List<String>> {
-  //singleton class so only instance exists
+  //singleton class so only one instance exists
   Following._sharedInstance() : super([]);
   static final Following _shared = Following._sharedInstance();
   factory Following() => _shared;
@@ -603,6 +630,24 @@ class Following extends ValueNotifier<List<String>> {
   void updateFollowing(List<String> following) {
     value.clear();
     value = following.map((str) => str).toList();
+    notifyListeners();
+  }
+
+  void clear() {
+    value.clear();
+    notifyListeners();
+  }
+}
+
+class Followers extends ValueNotifier<List<String>> {
+  //singleton class so only one instance exists
+  Followers._sharedInstance() : super([]);
+  static final Followers _shared = Followers._sharedInstance();
+  factory Followers() => _shared;
+
+  void updateFollowers(List<String> followers) {
+    value.clear();
+    value = followers.map((str) => str).toList();
     notifyListeners();
   }
 

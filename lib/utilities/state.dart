@@ -125,3 +125,8 @@ Future<bool> removeRelationship(
   }
   return false;
 }
+
+Future<bool> removeFollower(Users user, Users ownerUser, DataBase db) async {
+  var result = await db.removeFollower(user, ownerUser);
+  return result;
+}

@@ -1,7 +1,9 @@
 // ignore_for_file: file_names
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mysocialmediaapp/Views/F&FView.dart';
 import 'package:mysocialmediaapp/Views/LoginView.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
@@ -221,15 +223,28 @@ class _ProfileViewState extends State<ProfileView>
                               ),
                             ),
                             InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            FollowersAndFollowingView(
+                                                user: user,
+                                                choice: 'followers')));
+                              },
                               child: Column(
                                 children: [
-                                  Text(
-                                    (user.followers.length).toString(),
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
+                                  ValueListenableBuilder(
+                                    valueListenable: Followers(),
+                                    builder: (context, value, child) {
+                                      return Text(
+                                        (value.length).toString(),
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white),
+                                      );
+                                    },
                                   ),
                                   const Text(
                                     "Followers",
@@ -240,7 +255,15 @@ class _ProfileViewState extends State<ProfileView>
                               ),
                             ),
                             InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            FollowersAndFollowingView(
+                                                user: user,
+                                                choice: 'following')));
+                              },
                               child: Column(
                                 children: [
                                   ValueListenableBuilder(
