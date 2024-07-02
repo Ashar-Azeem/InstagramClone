@@ -1,15 +1,11 @@
 // ignore_for_file: file_names
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
-import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 
 class HomeView extends StatefulWidget {
   final Users user;
