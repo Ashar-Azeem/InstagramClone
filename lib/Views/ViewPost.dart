@@ -5,6 +5,7 @@ import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 
 class ViewPost extends StatefulWidget {
@@ -24,6 +25,8 @@ class ViewPost extends StatefulWidget {
 }
 
 class _ViewPostState extends State<ViewPost> {
+  late Users user;
+  bool isHeartAnimating = false;
   bool loading = false;
   late List<bool> seeMore;
   late List<Posts> posts;
@@ -34,7 +37,7 @@ class _ViewPostState extends State<ViewPost> {
   @override
   void initState() {
     super.initState();
-
+    user = widget.user;
     posts = widget.posts;
     seeMore = List.filled(posts.length, false);
     personalCheck = widget.personal;
@@ -86,9 +89,9 @@ class _ViewPostState extends State<ViewPost> {
                   controller: _controller,
                   itemCount: (posts.length),
                   itemBuilder: (context, index) {
-                    int totalLikes = posts[index].totalLikes;
                     int totalComments = posts[index].totalComments;
                     String userName = posts[index].userName;
+                    bool isLiked = posts[index].likesList.contains(user.userId);
                     return SizedBox(
                       width: screenWidth,
                       height: seeMore[index] == false
@@ -272,16 +275,52 @@ class _ViewPostState extends State<ViewPost> {
                               ]),
                           Padding(
                             padding: const EdgeInsets.only(top: 7),
-                            child: Container(
-                                width: screenWidth,
-                                height: screenHeight - 380,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(0),
-                                  image: DecorationImage(
-                                    image: NetworkImage(posts[index].postLoc),
-                                    fit: BoxFit.cover,
-                                  ),
-                                )),
+                            child: GestureDetector(
+                              child:
+                                  Stack(alignment: Alignment.center, children: [
+                                Container(
+                                    width: screenWidth,
+                                    height: screenHeight - 380,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(0),
+                                      image: DecorationImage(
+                                        image:
+                                            NetworkImage(posts[index].postLoc),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )),
+                                Opacity(
+                                  opacity: isHeartAnimating ? 1 : 0,
+                                  child: HeartAnimationWidget(
+                                      isAnimating: isHeartAnimating,
+                                      duration:
+                                          const Duration(milliseconds: 750),
+                                      onEnd: () {
+                                        setState(() {
+                                          isHeartAnimating = false;
+                                        });
+                                      },
+                                      child: const Icon(
+                                        Icons.favorite,
+                                        color: Colors.white,
+                                        size: 100,
+                                      )),
+                                )
+                              ]),
+                              onDoubleTap: () async {
+                                setState(() {
+                                  isHeartAnimating = true;
+                                  if (!isLiked) {
+                                    posts[index].totalLikes += 1;
+                                    posts[index].likesList.add(user.userId);
+                                  }
+                                });
+                                if (!isLiked) {
+                                  await DataBase().addLike(posts[index], user);
+                                  isLiked = true;
+                                }
+                              },
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(),
@@ -293,12 +332,46 @@ class _ViewPostState extends State<ViewPost> {
                                         MainAxisAlignment.spaceAround,
                                     children: [
                                       IconButton(
-                                          onPressed: () {},
-                                          icon: const Icon(
-                                            Icons.favorite_border_outlined,
-                                            size: 32,
-                                            color: Colors.white,
-                                          )),
+                                          onPressed: () async {
+                                            if (posts[index]
+                                                .likesList
+                                                .contains(user.userId)) {
+                                              setState(() {
+                                                isLiked = false;
+                                                posts[index]
+                                                    .likesList
+                                                    .remove(user.userId);
+                                                posts[index].totalLikes -= 1;
+                                              });
+                                              await DataBase().removeLike(
+                                                  posts[index], user);
+                                            } else {
+                                              setState(() {
+                                                isLiked = true;
+                                                posts[index]
+                                                    .likesList
+                                                    .add(user.userId);
+                                                posts[index].totalLikes += 1;
+                                              });
+                                              await DataBase()
+                                                  .addLike(posts[index], user);
+                                            }
+                                          },
+                                          icon: posts[index]
+                                                  .likesList
+                                                  .contains(user.userId)
+                                              ? const Icon(
+                                                  Icons.favorite,
+                                                  size: 32,
+                                                  color: Color.fromARGB(
+                                                      255, 230, 29, 15),
+                                                )
+                                              : const Icon(
+                                                  Icons
+                                                      .favorite_border_outlined,
+                                                  size: 32,
+                                                  color: Colors.white,
+                                                )),
                                       IconButton(
                                           onPressed: () {},
                                           icon: const Icon(
@@ -340,13 +413,21 @@ class _ViewPostState extends State<ViewPost> {
                                                     'assets/blankprofile.png'))
                                           ])
                                     : const Text(""),
-                                Text(
-                                  "   $totalLikes people liked your post",
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400),
-                                )
+                                posts[index].totalLikes == 1
+                                    ? Text(
+                                        "   ${posts[index].totalLikes} Like",
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400),
+                                      )
+                                    : Text(
+                                        "   ${posts[index].totalLikes} Likes",
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400),
+                                      )
                               ]),
                           const SizedBox(
                             height: 3,

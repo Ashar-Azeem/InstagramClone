@@ -69,8 +69,8 @@ Future<String> postProcess(
     post = await compressImage(post);
     String url = await uploadImageGetUrl(post, 'posts', true);
 
-    await DataBase().addPost(
-        user.userId, user.userName, user.imageLoc, url, content, 0, 0, user);
+    await DataBase().addPost(user.userId, user.userName, user.imageLoc, url,
+        content, 0, 0, [], user);
 
     return 'success';
   } catch (e) {

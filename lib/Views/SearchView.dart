@@ -111,8 +111,8 @@ class _SearchViewState extends State<SearchView>
                 limit: 18,
                 query: FirebaseFirestore.instance
                     .collection('posts')
-                    .where(FieldPath.documentId, whereIn: user.publicPosts!)
-                    .orderBy(FieldPath.documentId),
+                    .orderBy('uploadDateTime', descending: true)
+                    .where(FieldPath.documentId, whereIn: user.publicPosts!),
                 itemBuilder: (context, snapshot, index) {
                   var post = getObject(snapshot);
                   check(post);
@@ -189,11 +189,12 @@ Posts getObject(DocumentSnapshot snapshot) {
   int totalLikes = data['totalLikes'] as int;
   int totalComments = data['totalComments'] as int;
   Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
+  List<String> likesList = List<String>.from(data['likesList']);
 
   DateTime dartDate = firebaseDate.toDate();
 
   Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-      profileLoc, postLoc, content, dartDate);
+      profileLoc, postLoc, content, dartDate, likesList);
 
   return post;
 }

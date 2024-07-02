@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mysocialmediaapp/Views/F&FView.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
@@ -146,7 +147,15 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => FollowersAndFollowingView(
+                                user: ownerUser,
+                                visitingUser: user,
+                                choice: 'followers')));
+                  },
                   child: Column(
                     children: [
                       Text(
@@ -164,7 +173,15 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => FollowersAndFollowingView(
+                                user: ownerUser,
+                                visitingUser: user,
+                                choice: 'following')));
+                  },
                   child: Column(
                     children: [
                       Text(

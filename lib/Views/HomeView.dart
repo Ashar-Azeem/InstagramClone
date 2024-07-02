@@ -1,14 +1,19 @@
 // ignore_for_file: file_names
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
+import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 
 class HomeView extends StatefulWidget {
   final Users user;
+
   const HomeView({super.key, required this.user});
 
   @override
@@ -17,6 +22,8 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView>
     with AutomaticKeepAliveClientMixin {
+  bool rebuilt = false;
+  bool isHeartAnimating = false;
   late List<bool> seeMore;
   late Users ownerUser;
   DataBase db = DataBase();
@@ -64,384 +71,114 @@ class _HomeViewState extends State<HomeView>
               ),
             ];
           },
-          body: FutureBuilder(
-            future: DataBase().getStories(),
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.done:
-                  {
-                    var data = snapshot.data as List<String>;
-                    return ListView(children: [
-                      Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: SizedBox(
-                            height: MediaQuery.of(context).size.height / 7,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              itemCount: data.length,
-                              itemBuilder: (context, index) {
-                                return Column(
-                                  children: [
-                                    InkWell(
-                                      child: Container(
-                                          padding: const EdgeInsets.all(3.5),
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width /
-                                              4,
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height /
-                                              10,
-                                          decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                //Change the color of unseen stories
-                                                color: const Color.fromARGB(
-                                                    255, 61, 61, 65),
-                                                width: 3,
-                                              )),
-                                          child: const CircleAvatar(
-                                            backgroundColor: Colors.orange,
-                                            radius: 20,
-                                          )),
-                                    ),
-                                    Text(data[index])
-                                  ],
-                                );
-                              },
-                            ),
-                          )),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            bottom: 20, left: 10, right: 5),
-                        child: FirestorePagination(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          limit: 10,
-                          onEmpty: const Center(
-                            child: Text('Start following people to get posts'),
-                          ),
-                          bottomLoader: const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                          initialLoader: const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                          query: FirebaseFirestore.instance
-                              .collection('posts')
-                              .where('userId', whereIn: ownerUser.following)
-                              .orderBy('uploadDateTime'),
-                          itemBuilder: (context, snapshot, index) {
-                            var post = getObject(snapshot);
-                            return SizedBox(
-                              width: screenWidth,
-                              height: seeMore[index] == false
-                                  ? screenHeight - 150
-                                  : screenHeight,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 5),
-                                              child: Container(
-                                                width: 48.0,
-                                                height: 48.0,
-                                                decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: Colors
-                                                          .white, // Border color
-                                                      width:
-                                                          1.0, // Border width
-                                                    )),
-                                                child: post.profLoc == null
-                                                    ? const CircleAvatar(
-                                                        backgroundColor:
-                                                            Colors.black,
-                                                        backgroundImage: AssetImage(
-                                                            'assets/blankprofile.png'),
-                                                        radius: 30,
-                                                      )
-                                                    : CircleAvatar(
-                                                        backgroundColor:
-                                                            Colors.black,
-                                                        backgroundImage:
-                                                            NetworkImage(
-                                                                post.profLoc!),
-                                                        radius: 30,
-                                                      ),
-                                              ),
-                                            ),
-                                            TextButton(
-                                                onPressed: () async {
-                                                  Users user1 = await DataBase()
-                                                      .getUser(post.userId,
-                                                          false) as Users;
-                                                  Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              VisitingProfileView(
-                                                                  user: user1,
-                                                                  ownerUser:
-                                                                      ownerUser)));
-                                                },
-                                                child: Text(
-                                                    "  ${post.userName}",
-                                                    style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.w500)))
-                                          ],
-                                        ),
-                                      ]),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 7),
-                                    child: Container(
-                                        width: screenWidth,
-                                        height: screenHeight - 380,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(0),
-                                          image: DecorationImage(
-                                            image: NetworkImage(post.postLoc),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
+          body: Column(children: [
+            FutureBuilder(
+                future: DataBase().getStories(),
+                builder: (context, snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.done:
+                      {
+                        var data = snapshot.data as List<String>;
+                        return Expanded(
+                          child: ListView(children: [
+                            Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height / 7,
+                                    child: ListView.builder(
+                                        shrinkWrap: true,
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: data.length,
+                                        itemBuilder: (context, index) {
+                                          return Column(
                                             children: [
-                                              IconButton(
-                                                  onPressed: () {},
-                                                  icon: const Icon(
-                                                    Icons
-                                                        .favorite_border_outlined,
-                                                    size: 32,
-                                                    color: Colors.white,
-                                                  )),
-                                              IconButton(
-                                                  onPressed: () {},
-                                                  icon: const Icon(
-                                                    Icons.mode_comment_outlined,
-                                                    color: Colors.white,
-                                                    size: 30,
-                                                  )),
-                                              IconButton(
-                                                  onPressed: () {},
-                                                  icon: const Icon(
-                                                    Icons.send,
-                                                    color: Colors.white,
-                                                    size: 30,
-                                                  ))
-                                            ]),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        post.totalLikes > 3
-                                            ? const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                    CircleAvatar(
-                                                      radius: 10,
-                                                      backgroundImage: AssetImage(
-                                                          'assets/blankprofile.png'),
-                                                    ),
-                                                    CircleAvatar(
-                                                        radius: 10,
-                                                        backgroundImage: AssetImage(
-                                                            'assets/blankprofile.png')),
-                                                    CircleAvatar(
-                                                        radius: 10,
-                                                        backgroundImage: AssetImage(
-                                                            'assets/blankprofile.png'))
-                                                  ])
-                                            : const Text(""),
-                                        Text(
-                                          "   ${post.totalLikes} people liked your post",
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w400),
-                                        )
-                                      ]),
-                                  const SizedBox(
-                                    height: 3,
-                                  ),
-                                  seeMore[index] == false
-                                      ? Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10, right: 6),
-                                              child: Text(
-                                                post.userName,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 13.5,
-                                                    fontWeight:
-                                                        FontWeight.w500),
-                                              ),
-                                            ),
-                                            post.content!.length > 28
-                                                ? Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        (post.content!).substring(
-                                                            0,
-                                                            38 -
-                                                                post.userName
-                                                                    .length),
-                                                      ),
-                                                      IconButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              seeMore[index] =
-                                                                  true;
-                                                            });
-                                                          },
-                                                          icon: const Icon(
-                                                              Icons.more_horiz,
-                                                              color:
-                                                                  Colors.white,
-                                                              size: 20))
-                                                    ],
-                                                  )
-                                                : Text(post.content!),
-                                          ],
-                                        )
-                                      : Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 10, right: 6),
-                                                child: Text(
-                                                  post.userName,
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 13.5,
-                                                      fontWeight:
-                                                          FontWeight.w500),
-                                                ),
-                                              ),
-                                              TextField(
-                                                enabled: false,
-                                                controller:
-                                                    TextEditingController(
-                                                        text: post.content),
-                                                decoration:
-                                                    const InputDecoration(
-                                                        border:
-                                                            OutlineInputBorder(),
-                                                        labelStyle: TextStyle(
-                                                            color:
-                                                                Colors.white)),
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 15),
-                                                maxLines: null,
-                                              ),
-                                              Center(
-                                                child: TextButton(
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        seeMore[index] = false;
-                                                      });
-                                                    },
-                                                    child: const Text(
-                                                      'Show less',
-                                                      style: TextStyle(
-                                                          color: Colors.grey),
+                                              InkWell(
+                                                child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            3.5),
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            4,
+                                                    height:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .height /
+                                                            10,
+                                                    decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                          //Change the color of unseen stories
+                                                          color: const Color
+                                                              .fromARGB(
+                                                              255, 61, 61, 65),
+                                                          width: 3,
+                                                        )),
+                                                    child: const CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.orange,
+                                                      radius: 20,
                                                     )),
-                                              )
-                                            ]),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.only(left: 10, top: 6),
-                                    child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "${post.totalComments}l Comments",
-                                            style: const TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ]),
+                                              ),
+                                              Text(data[index])
+                                            ],
+                                          );
+                                        }))),
+                            FirestorePagination(
+                                shrinkWrap: true,
+                                viewType: ViewType.list,
+                                onEmpty: const Text(
+                                    'No Exploring data is available at the moment'),
+                                initialLoader: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
                                   ),
-                                  const SizedBox(
-                                    height: 5,
+                                ),
+                                bottomLoader: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            post.uploadDateTime
-                                                .toString()
-                                                .substring(0, 11),
-                                            style: const TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ]),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                                ),
+                                limit: 12,
+                                query: FirebaseFirestore.instance
+                                    .collection('posts')
+                                    .where('userId',
+                                        whereIn: ownerUser.following)
+                                    .orderBy('uploadDateTime',
+                                        descending: true),
+                                itemBuilder: (context, snapshot, index) {
+                                  var post = getObject(snapshot);
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 6, right: 6),
+                                    child: HomeScreenItems(
+                                        post: post,
+                                        ownerUser: ownerUser,
+                                        screenHeight: screenHeight,
+                                        screenWwidth: screenWidth,
+                                        seeMore: seeMore,
+                                        index: index),
+                                  );
+                                })
+                          ]),
+                        );
+                      }
+
+                    default:
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
                         ),
-                      ),
-                    ]);
+                      );
                   }
-                default:
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  );
-              }
-            },
-          ),
+                }),
+          ]),
         ),
       ),
     );
@@ -462,11 +199,12 @@ Posts getObject(DocumentSnapshot snapshot) {
   int totalLikes = data['totalLikes'] as int;
   int totalComments = data['totalComments'] as int;
   Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
+  List<String> likesList = List<String>.from(data['likesList']);
 
   DateTime dartDate = firebaseDate.toDate();
 
   Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-      profileLoc, postLoc, content, dartDate);
+      profileLoc, postLoc, content, dartDate, likesList);
 
   return post;
 }

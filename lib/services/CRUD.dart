@@ -74,11 +74,12 @@ class DataBase {
         int totalLikes = data['totalLikes'] as int;
         int totalComments = data['totalComments'] as int;
         Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
+        List<String> likesList = List<String>.from(data['likesList']);
 
         DateTime dartDate = firebaseDate.toDate();
 
         Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-            profileLoc, postLoc, content, dartDate);
+            profileLoc, postLoc, content, dartDate, likesList);
 
         return post;
       }
@@ -281,6 +282,36 @@ class DataBase {
     }
   }
 
+  Future<bool> addLike(Posts post, Users user) async {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentReference postRef = postCollection.doc(post.postId);
+      if (post.likesList.contains(user.userId)) {
+        return false;
+      }
+
+      transaction.update(postRef, {
+        'likesList': FieldValue.arrayUnion([user.userId])
+      });
+      transaction.update(postRef, {'totalLikes': FieldValue.increment(1)});
+
+      return true;
+    });
+    return false;
+  }
+
+  Future<bool> removeLike(Posts post, Users user) async {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentReference postRef = postCollection.doc(post.postId);
+
+      transaction.update(postRef, {'totalLikes': FieldValue.increment(-1)});
+      transaction.update(postRef, {
+        'likesList': FieldValue.arrayRemove([user.userId])
+      });
+      return true;
+    });
+    return false;
+  }
+
   Future<bool> removeFollower(Users visitingUser, Users ownerUser) async {
     try {
       List<String> visiterFollowing = visitingUser.following;
@@ -316,6 +347,7 @@ class DataBase {
       String? content,
       int totalLikes,
       int totalComments,
+      List<String> likesList,
       Users user) async {
     try {
       DateTime currentDate = DateTime.now();
@@ -328,10 +360,11 @@ class DataBase {
         'content': content,
         'totalLikes': totalLikes,
         'totalComments': totalComments,
-        'uploadDateTime': fireStoreDate
+        'uploadDateTime': fireStoreDate,
+        'likesList': likesList,
       });
       final post = Posts(doc.id, totalLikes, totalComments, userId, userName,
-          profileLoc, postLoc, content, currentDate);
+          profileLoc, postLoc, content, currentDate, likesList);
 
       if (!user.isPrivate) {
         List<String> publicPosts = await getPublicPostsList();
@@ -387,19 +420,21 @@ class DataBase {
         int totalLikes = data['totalLikes'] as int;
         int totalComments = data['totalComments'] as int;
         Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
+        List<String> likesList = List<String>.from(data['likesList']);
 
         DateTime dartDate = firebaseDate.toDate();
 
         Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-            profileLoc, postLoc, content, dartDate);
+            profileLoc, postLoc, content, dartDate, likesList);
         posts.add(post);
+
         if (send) {
           PostsCollection().addPost(post: post);
         }
       }
       return posts;
     } catch (e) {
-      //
+      print(e);
     }
     return null;
   }
@@ -559,6 +594,7 @@ class Posts {
   late String postLoc;
   late String? content;
   late DateTime uploadDateTime;
+  late List<String> likesList;
 
   Posts(
       this.postId,
@@ -569,7 +605,8 @@ class Posts {
       this.profLoc,
       this.postLoc,
       this.content,
-      this.uploadDateTime);
+      this.uploadDateTime,
+      this.likesList);
 
   @override
   bool operator ==(Object other) =>

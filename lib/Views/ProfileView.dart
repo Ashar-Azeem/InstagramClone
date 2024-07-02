@@ -66,6 +66,7 @@ class _ProfileViewState extends State<ProfileView>
                 if (result == 'logout') {
                   PostsCollection().clear();
                   Following().clear();
+                  Followers().clear();
                   await AuthService().logout();
                   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                     MaterialPageRoute(
@@ -230,6 +231,7 @@ class _ProfileViewState extends State<ProfileView>
                                         builder: (context) =>
                                             FollowersAndFollowingView(
                                                 user: user,
+                                                visitingUser: user,
                                                 choice: 'followers')));
                               },
                               child: Column(
@@ -262,6 +264,7 @@ class _ProfileViewState extends State<ProfileView>
                                         builder: (context) =>
                                             FollowersAndFollowingView(
                                                 user: user,
+                                                visitingUser: user,
                                                 choice: 'following')));
                               },
                               child: Column(
@@ -392,7 +395,6 @@ class _ProfileViewState extends State<ProfileView>
                                   List.from(PostsCollection().value);
                               posts.sort((a, b) =>
                                   b.uploadDateTime.compareTo(a.uploadDateTime));
-                              print(posts.length);
 
                               return Padding(
                                 padding:
