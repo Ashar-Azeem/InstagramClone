@@ -6,6 +6,7 @@ import 'package:mysocialmediaapp/Views/RegistrationView.dart';
 import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:sizer/sizer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,17 +14,19 @@ void main() {
     DeviceOrientation.portraitUp,
   ]);
   runApp(
-    MaterialApp(
-      title: 'Social media app',
-      theme: ThemeData.dark()
-          .copyWith(scaffoldBackgroundColor: mobileBackgroundColor),
-      home: const Main(),
-      routes: {
-        LoginRoute: (context) => const LoginView(),
-        RegisterRoute: (context) => const RegistrationView(),
-        MainUIRoute: (context) => const MainUI()
-      },
-    ),
+    Sizer(builder: (context, orientation, deviceType) {
+      return MaterialApp(
+        title: 'Social media app',
+        theme: ThemeData.dark()
+            .copyWith(scaffoldBackgroundColor: mobileBackgroundColor),
+        home: const Main(),
+        routes: {
+          LoginRoute: (context) => const LoginView(),
+          RegisterRoute: (context) => const RegistrationView(),
+          MainUIRoute: (context) => const MainUI()
+        },
+      );
+    }),
   );
 }
 

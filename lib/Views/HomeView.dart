@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:sizer/sizer.dart';
 
 class HomeView extends StatefulWidget {
   final Users user;
@@ -18,7 +19,6 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView>
     with AutomaticKeepAliveClientMixin {
-  bool rebuilt = false;
   bool isHeartAnimating = false;
   late List<bool> seeMore;
   late Users ownerUser;
@@ -34,8 +34,10 @@ class _HomeViewState extends State<HomeView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    var screenWidth = MediaQuery.of(context).size.width;
-    var screenHeight = MediaQuery.of(context).size.height;
+    var screenWidth = 100.w;
+    var screenHeight = 100.h;
+
+    print(screenWidth);
     return Scaffold(
       backgroundColor: mobileBackgroundColor,
       body: SafeArea(

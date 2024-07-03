@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
+import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
@@ -44,14 +45,18 @@ class _ViewPostState extends State<ViewPost> {
     index1 = widget.index1;
     _controller = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToIndex();
+      if (_controller.hasClients) {
+        _controller.jumpTo(
+          index1 * size,
+        );
+      }
     });
   }
 
-  void _scrollToIndex() {
-    _controller.jumpTo(
-      index1 * size,
-    );
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -373,7 +378,24 @@ class _ViewPostState extends State<ViewPost> {
                                                   color: Colors.white,
                                                 )),
                                       IconButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            showModalBottomSheet(
+                                              isScrollControlled: true,
+                                              useRootNavigator: true,
+                                              backgroundColor:
+                                                  const Color.fromARGB(
+                                                      255, 34, 38, 41),
+                                              context: context,
+                                              builder: (context) {
+                                                return CustomBottomSheet(
+                                                  screenHeight: screenHeight,
+                                                  screenWidth: screenWidth,
+                                                  ownerUser: user,
+                                                  post: posts[index],
+                                                );
+                                              },
+                                            );
+                                          },
                                           icon: const Icon(
                                             Icons.mode_comment_outlined,
                                             color: Colors.white,

@@ -87,6 +87,7 @@ class _SearchViewState extends State<SearchView>
             padding: const EdgeInsets.only(left: 5, right: 5),
             sliver: SliverToBoxAdapter(
               child: FirestorePagination(
+                isLive: true,
                 shrinkWrap: true,
                 viewType: ViewType.grid,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -116,7 +117,9 @@ class _SearchViewState extends State<SearchView>
                 itemBuilder: (context, snapshot, index) {
                   var post = getObject(snapshot);
                   check(post);
-
+                  // if (user.following.contains(post.userId)) {
+                  //   return SizedBox.shrink();
+                  // }
                   return InkWell(
                       onTap: () async {
                         Posts post = documents[index];

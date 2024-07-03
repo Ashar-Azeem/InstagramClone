@@ -10,6 +10,9 @@ class DataBase {
   CollectionReference userCollection =
       FirebaseFirestore.instance.collection('users');
 
+  CollectionReference commentsCollection =
+      FirebaseFirestore.instance.collection('comments');
+
   DocumentReference publicPosts = FirebaseFirestore.instance
       .collection('PublicPosts')
       .doc('UniversalCategory');
@@ -283,12 +286,12 @@ class DataBase {
   }
 
   Future<bool> addLike(Posts post, Users user) async {
+    DocumentReference postRef = postCollection.doc(post.postId);
+    Posts currentPost = await getPost(post.postId) as Posts;
+    if (currentPost.likesList.contains(user.userId)) {
+      return false;
+    }
     await FirebaseFirestore.instance.runTransaction((transaction) async {
-      DocumentReference postRef = postCollection.doc(post.postId);
-      if (post.likesList.contains(user.userId)) {
-        return false;
-      }
-
       transaction.update(postRef, {
         'likesList': FieldValue.arrayUnion([user.userId])
       });
@@ -300,13 +303,18 @@ class DataBase {
   }
 
   Future<bool> removeLike(Posts post, Users user) async {
+    DocumentReference postRef = postCollection.doc(post.postId);
+    Posts currentPost = await getPost(post.postId) as Posts;
+    if (!currentPost.likesList.contains(user.userId) ||
+        (currentPost.totalLikes <= 0)) {
+      return false;
+    }
     await FirebaseFirestore.instance.runTransaction((transaction) async {
-      DocumentReference postRef = postCollection.doc(post.postId);
-
-      transaction.update(postRef, {'totalLikes': FieldValue.increment(-1)});
       transaction.update(postRef, {
         'likesList': FieldValue.arrayRemove([user.userId])
       });
+      transaction.update(postRef, {'totalLikes': FieldValue.increment(-1)});
+
       return true;
     });
     return false;
@@ -531,12 +539,29 @@ class DataBase {
     }
   }
 
-  void check() async {
-    // Users user = Users(
-    //     id: "cde", n: "ashar ", un: "batman786", loc: null, f1: [], f2: []);
-    // DataBase db = DataBase();
-    // var check = await getUser(FirebaseAuth.instance.currentUser!.uid);
-    // print(check!.followers);
+  Future<bool> insertComments(Comments comment) async {
+    try {
+      DateTime currentDate = DateTime.now();
+      Timestamp fireStoreDate = Timestamp.fromDate(currentDate);
+      await commentsCollection.add({
+        'userId': comment.userId,
+        'userName': comment.userName,
+        'profileLoc': comment.profileLoc,
+        'postId': comment.postId,
+        'uploadDate': fireStoreDate,
+        'content': comment.content
+      });
+
+      DocumentReference postRef = postCollection.doc(comment.postId);
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        transaction.update(postRef, {'totalComments': FieldValue.increment(1)});
+
+        return true;
+      });
+    } catch (e) {
+      //
+    }
+    return false;
   }
 }
 
@@ -582,6 +607,18 @@ class Users {
   // Override hashCode based on id
   @override
   int get hashCode => userId.hashCode;
+}
+
+class Comments {
+  late String userName;
+  late String userId;
+  late String? profileLoc;
+  late String postId;
+  late DateTime uploadDateTime;
+  late String content;
+
+  Comments(this.postId, this.userId, this.userName, this.profileLoc,
+      this.uploadDateTime, this.content);
 }
 
 class Posts {

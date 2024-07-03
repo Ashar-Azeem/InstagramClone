@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: file_names
 import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
+import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 
 class HomeScreenItems extends StatefulWidget {
@@ -182,7 +182,23 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                                   color: Colors.white,
                                 )),
                       IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            showModalBottomSheet(
+                              isScrollControlled: true,
+                              useRootNavigator: true,
+                              backgroundColor:
+                                  const Color.fromARGB(255, 34, 38, 41),
+                              context: context,
+                              builder: (context) {
+                                return CustomBottomSheet(
+                                  screenHeight: screenHeight,
+                                  screenWidth: screenWidth,
+                                  ownerUser: ownerUser,
+                                  post: post,
+                                );
+                              },
+                            );
+                          },
                           icon: const Icon(
                             Icons.mode_comment_outlined,
                             color: Colors.white,

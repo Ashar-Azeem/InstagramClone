@@ -48,6 +48,7 @@ dependencies:
   firebase_messaging: ^14.8.1
   persistent_bottom_nav_bar: ^5.0.2
   firebase_pagination: ^3.1.0
+  sizer: ^2.0.15
 
 dev_dependencies:
   flutter_test:
