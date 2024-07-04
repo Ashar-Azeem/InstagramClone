@@ -130,3 +130,28 @@ Future<bool> removeFollower(Users user, Users ownerUser, DataBase db) async {
   var result = await db.removeFollower(user, ownerUser);
   return result;
 }
+
+Future<bool> postStoryProcess(
+    {required String userName,
+    required String userId,
+    required Uint8List storyImage,
+    required String? profileLoc,
+    required String? content,
+    required BuildContext context}) async {
+  try {
+    var updatedImage = await compressImage(storyImage);
+    String url = await uploadStoryImageGetUrl(updatedImage, 'story');
+
+    await DataBase().uploadStory(
+        userName: userName,
+        userId: userId,
+        storyImageLoc: url,
+        profileLoc: profileLoc,
+        content: content);
+
+    return true;
+  } catch (e) {
+    await showErrorDialog(context, e.toString());
+  }
+  return false;
+}

@@ -3,9 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mysocialmediaapp/Views/AddStoryView.dart';
+import 'package:mysocialmediaapp/Views/MessagesView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:sizer/sizer.dart';
 
 class HomeView extends StatefulWidget {
@@ -37,146 +40,172 @@ class _HomeViewState extends State<HomeView>
     var screenWidth = 100.w;
     var screenHeight = 100.h;
 
-    print(screenWidth);
-    return Scaffold(
-      backgroundColor: mobileBackgroundColor,
-      body: SafeArea(
-        child: NestedScrollView(
-          floatHeaderSlivers: true,
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverPadding(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 7),
-                sliver: SliverToBoxAdapter(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/logo.svg',
-                        color: primaryColor,
-                        height: 36,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Image.asset(
-                          'assets/messageIcon.png',
-                          height: 30,
+    return GestureDetector(
+      onHorizontalDragUpdate: (details) {
+        // Note: Sensitivity is integer used when you don't want to mess up vertical drag
+        int sensitivity = 12;
+        if (details.delta.dx > sensitivity) {
+          PersistentNavBarNavigator.pushNewScreen(
+            context,
+            screen: (AddStoryView(
+              user: ownerUser,
+            )),
+            withNavBar: false,
+            pageTransitionAnimation: PageTransitionAnimation.slideRight,
+          );
+          // Right Swipe
+        } else if (details.delta.dx < -sensitivity) {
+          PersistentNavBarNavigator.pushNewScreen(
+            context,
+            screen: (const MessagesView()),
+            withNavBar: false,
+            pageTransitionAnimation: PageTransitionAnimation.cupertino,
+          );
+          //Left Swipe
+        }
+      },
+      child: Scaffold(
+        backgroundColor: mobileBackgroundColor,
+        body: SafeArea(
+          child: NestedScrollView(
+            floatHeaderSlivers: true,
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverPadding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 7),
+                  sliver: SliverToBoxAdapter(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/logo.svg',
+                          color: primaryColor,
+                          height: 36,
                         ),
-                      )
-                    ],
+                        IconButton(
+                          onPressed: () {},
+                          icon: Image.asset(
+                            'assets/messageIcon.png',
+                            height: 30,
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ];
-          },
-          body: Column(children: [
-            FutureBuilder(
-                future: DataBase().getStories(),
-                builder: (context, snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.done:
-                      {
-                        var data = snapshot.data as List<String>;
-                        return Expanded(
-                          child: ListView(children: [
-                            Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: SizedBox(
-                                    height:
-                                        MediaQuery.of(context).size.height / 7,
-                                    child: ListView.builder(
-                                        shrinkWrap: true,
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: data.length,
-                                        itemBuilder: (context, index) {
-                                          return Column(
-                                            children: [
-                                              InkWell(
-                                                child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            3.5),
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width /
-                                                            4,
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height /
-                                                            10,
-                                                    decoration: BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        border: Border.all(
-                                                          //Change the color of unseen stories
-                                                          color: const Color
-                                                              .fromARGB(
-                                                              255, 61, 61, 65),
-                                                          width: 3,
-                                                        )),
-                                                    child: const CircleAvatar(
-                                                      backgroundColor:
-                                                          Colors.orange,
-                                                      radius: 20,
-                                                    )),
-                                              ),
-                                              Text(data[index])
-                                            ],
-                                          );
-                                        }))),
-                            FirestorePagination(
-                                shrinkWrap: true,
-                                viewType: ViewType.list,
-                                onEmpty: const Text(
-                                    'No Exploring data is available at the moment'),
-                                initialLoader: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
+              ];
+            },
+            body: Column(children: [
+              FutureBuilder(
+                  future: DataBase().getStories(),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.done:
+                        {
+                          var data = snapshot.data as List<String>;
+                          return Expanded(
+                            child: ListView(children: [
+                              Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              7,
+                                      child: ListView.builder(
+                                          shrinkWrap: true,
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: data.length,
+                                          itemBuilder: (context, index) {
+                                            return Column(
+                                              children: [
+                                                InkWell(
+                                                  child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              3.5),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width /
+                                                              4,
+                                                      height:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .height /
+                                                              10,
+                                                      decoration: BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          border: Border.all(
+                                                            //Change the color of unseen stories
+                                                            color: const Color
+                                                                .fromARGB(255,
+                                                                61, 61, 65),
+                                                            width: 3,
+                                                          )),
+                                                      child: const CircleAvatar(
+                                                        backgroundColor:
+                                                            Colors.orange,
+                                                        radius: 20,
+                                                      )),
+                                                ),
+                                                Text(data[index])
+                                              ],
+                                            );
+                                          }))),
+                              FirestorePagination(
+                                  shrinkWrap: true,
+                                  viewType: ViewType.list,
+                                  onEmpty: const Text(
+                                      'No Exploring data is available at the moment'),
+                                  initialLoader: const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
                                   ),
-                                ),
-                                bottomLoader: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
+                                  bottomLoader: const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
                                   ),
-                                ),
-                                limit: 12,
-                                query: FirebaseFirestore.instance
-                                    .collection('posts')
-                                    .where('userId',
-                                        whereIn: ownerUser.following)
-                                    .orderBy('uploadDateTime',
-                                        descending: true),
-                                itemBuilder: (context, snapshot, index) {
-                                  var post = getObject(snapshot);
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 6, right: 6),
-                                    child: HomeScreenItems(
-                                        post: post,
-                                        ownerUser: ownerUser,
-                                        screenHeight: screenHeight,
-                                        screenWwidth: screenWidth,
-                                        seeMore: seeMore,
-                                        index: index),
-                                  );
-                                })
-                          ]),
-                        );
-                      }
+                                  limit: 12,
+                                  query: FirebaseFirestore.instance
+                                      .collection('posts')
+                                      .where('userId',
+                                          whereIn: ownerUser.following)
+                                      .orderBy('uploadDateTime',
+                                          descending: true),
+                                  itemBuilder: (context, snapshot, index) {
+                                    var post = getObject(snapshot);
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 6, right: 6),
+                                      child: HomeScreenItems(
+                                          post: post,
+                                          ownerUser: ownerUser,
+                                          screenHeight: screenHeight,
+                                          screenWwidth: screenWidth,
+                                          seeMore: seeMore,
+                                          index: index),
+                                    );
+                                  })
+                            ]),
+                          );
+                        }
 
-                    default:
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      );
-                  }
-                }),
-          ]),
+                      default:
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        );
+                    }
+                  }),
+            ]),
+          ),
         ),
       ),
     );

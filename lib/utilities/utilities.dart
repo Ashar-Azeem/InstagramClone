@@ -34,6 +34,18 @@ Future<String> uploadImageGetUrl(
   }
 }
 
+Future<String> uploadStoryImageGetUrl(Uint8List image, String category) async {
+  String imageId = const Uuid().v1();
+  Reference storageReference = FirebaseStorage.instance
+      .ref()
+      .child(category)
+      .child(FirebaseAuth.instance.currentUser!.uid)
+      .child(imageId);
+  UploadTask task = storageReference.putData(image);
+  TaskSnapshot snap = await task;
+  return snap.ref.getDownloadURL();
+}
+
 Future<Uint8List> compressImage(Uint8List imageBytes) async {
   try {
     // Compress the image using flutter_image_compress

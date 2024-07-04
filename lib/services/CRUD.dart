@@ -10,6 +10,9 @@ class DataBase {
   CollectionReference userCollection =
       FirebaseFirestore.instance.collection('users');
 
+  CollectionReference storyCollection =
+      FirebaseFirestore.instance.collection('stories');
+
   CollectionReference commentsCollection =
       FirebaseFirestore.instance.collection('comments');
 
@@ -539,6 +542,36 @@ class DataBase {
     }
   }
 
+  Future<bool> uploadStory(
+      {required String userName,
+      required String userId,
+      required String storyImageLoc,
+      required String? profileLoc,
+      required String? content}) async {
+    try {
+      DateTime currentDateTime = DateTime.now();
+      DateTime finishDateTime = currentDateTime.add(const Duration(hours: 24));
+
+      Timestamp fireStoreDate1 = Timestamp.fromDate(currentDateTime);
+      Timestamp fireStoreDate2 = Timestamp.fromDate(finishDateTime);
+
+      await storyCollection.add({
+        'userId': userId,
+        'userName': userName,
+        'profileLoc': profileLoc,
+        'uploadDateTime': fireStoreDate1,
+        'content': content,
+        'finishDateTime': fireStoreDate2,
+        'storyImageLoc': storyImageLoc,
+      });
+
+      return true;
+    } catch (e) {
+      print(e);
+    }
+    return false;
+  }
+
   Future<bool> insertComments(Comments comment) async {
     try {
       DateTime currentDate = DateTime.now();
@@ -607,6 +640,17 @@ class Users {
   // Override hashCode based on id
   @override
   int get hashCode => userId.hashCode;
+}
+
+class Story {
+  late String storyId;
+  late String userName;
+  late String userId;
+  late String storyImageLoc;
+  late String? profileLoc;
+  late DateTime uploadDate;
+  late DateTime finishDateTime;
+  late String? content;
 }
 
 class Comments {
