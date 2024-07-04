@@ -551,7 +551,7 @@ class DataBase {
     try {
       DateTime currentDateTime = DateTime.now();
       DateTime finishDateTime = currentDateTime.add(const Duration(hours: 24));
-
+      List<String> views = [];
       Timestamp fireStoreDate1 = Timestamp.fromDate(currentDateTime);
       Timestamp fireStoreDate2 = Timestamp.fromDate(finishDateTime);
 
@@ -563,6 +563,7 @@ class DataBase {
         'content': content,
         'finishDateTime': fireStoreDate2,
         'storyImageLoc': storyImageLoc,
+        'views': views,
       });
 
       return true;
@@ -582,7 +583,7 @@ class DataBase {
         'profileLoc': comment.profileLoc,
         'postId': comment.postId,
         'uploadDate': fireStoreDate,
-        'content': comment.content
+        'content': comment.content,
       });
 
       DocumentReference postRef = postCollection.doc(comment.postId);
@@ -651,6 +652,18 @@ class Story {
   late DateTime uploadDate;
   late DateTime finishDateTime;
   late String? content;
+  late List<String> views;
+
+  Story(
+      this.content,
+      this.finishDateTime,
+      this.profileLoc,
+      this.storyId,
+      this.storyImageLoc,
+      this.uploadDate,
+      this.userId,
+      this.userName,
+      this.views);
 }
 
 class Comments {
