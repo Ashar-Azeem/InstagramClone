@@ -132,6 +132,7 @@ class _FollowersAndFollowingViewState extends State<FollowersAndFollowingView> {
                           strokeWidth: 2,
                         ),
                       ),
+                      isLive: true,
                       query: FirebaseFirestore.instance
                           .collection('users')
                           .orderBy('userName', descending: true)
@@ -150,6 +151,7 @@ class _FollowersAndFollowingViewState extends State<FollowersAndFollowingView> {
                                   builder: (context) => VisitingProfileView(
                                         user: fUser,
                                         ownerUser: user,
+                                        rebuilt: null,
                                       )),
                             );
                           },

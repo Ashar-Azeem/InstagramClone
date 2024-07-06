@@ -89,6 +89,7 @@ class _SearchBarViewState extends State<SearchBarView> {
                                             VisitingProfileView(
                                               user: users[index],
                                               ownerUser: user,
+                                              rebuilt: null,
                                             )),
                                   );
                                 },

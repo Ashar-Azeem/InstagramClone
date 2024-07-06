@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
@@ -167,6 +166,7 @@ class _SearchViewState extends State<SearchView>
                                   index1: 0,
                                   personal: false,
                                   user: user,
+                                  rebuilt: refresh,
                                 ),
                               ));
                         },

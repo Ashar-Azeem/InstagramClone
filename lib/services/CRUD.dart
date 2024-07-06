@@ -254,9 +254,13 @@ class DataBase {
         DocumentReference visitedUserRef = userCollection.doc(user.userId);
         DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
 
-        transaction.update(visitedUserRef, {'followers': visitedFollowers});
+        transaction.update(visitedUserRef, {
+          'followers': FieldValue.arrayUnion([ownerUser.userId])
+        });
 
-        transaction.update(ownerUserRef, {'following': ownerFollowing});
+        transaction.update(ownerUserRef, {
+          'following': FieldValue.arrayUnion([user.userId])
+        });
 
         Following().updateFollowing(ownerFollowing);
       });
@@ -277,9 +281,13 @@ class DataBase {
         DocumentReference visitedUserRef = userCollection.doc(user.userId);
         DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
 
-        transaction.update(visitedUserRef, {'followers': visitedFollowers});
+        transaction.update(visitedUserRef, {
+          'followers': FieldValue.arrayRemove([ownerUser.userId])
+        });
 
-        transaction.update(ownerUserRef, {'following': ownerFollowing});
+        transaction.update(ownerUserRef, {
+          'following': FieldValue.arrayRemove([user.userId])
+        });
 
         Following().updateFollowing(ownerFollowing);
       });
@@ -336,9 +344,13 @@ class DataBase {
             userCollection.doc(visitingUser.userId);
         DocumentReference ownerUserRef = userCollection.doc(ownerUser.userId);
 
-        transaction.update(visitedUserRef, {'following': visiterFollowing});
+        transaction.update(visitedUserRef, {
+          'following': FieldValue.arrayRemove([ownerUser.userId])
+        });
 
-        transaction.update(ownerUserRef, {'followers': ownerFollowers});
+        transaction.update(ownerUserRef, {
+          'followers': FieldValue.arrayRemove([visitingUser.userId])
+        });
 
         Followers().updateFollowers(ownerFollowers);
       });
@@ -841,6 +853,7 @@ class StoryCollection extends ValueNotifier<List<Story>> {
       }
     }
     value.add(story);
+    print('added');
     notifyListeners();
   }
 

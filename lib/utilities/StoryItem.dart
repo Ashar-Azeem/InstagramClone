@@ -1,13 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
+import 'package:mysocialmediaapp/Views/AddStoryView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:sizer/sizer.dart';
 
 class StoryItem extends StatefulWidget {
   final Users user;
   final List<Story> stories;
-  const StoryItem({super.key, required this.stories, required this.user});
+  final List<List<Story>>? allStoriesList;
+  const StoryItem(
+      {super.key,
+      required this.stories,
+      required this.user,
+      required this.allStoriesList});
 
   @override
   State<StoryItem> createState() => _StoryItemState();
@@ -16,11 +24,13 @@ class StoryItem extends StatefulWidget {
 class _StoryItemState extends State<StoryItem> {
   late List<Story> stories;
   late Users user;
+  late List<List<Story>>? allStoriesList;
   @override
   void initState() {
     super.initState();
     stories = widget.stories;
     user = widget.user;
+    allStoriesList = widget.allStoriesList;
   }
 
   bool checkSeen(List<Story> story) {
@@ -66,12 +76,47 @@ class _StoryItemState extends State<StoryItem> {
                                     ]),
                               width: 3.5,
                             )),
-                  child: CircleAvatar(
-                    backgroundColor: Colors.grey,
-                    backgroundImage: stories.isEmpty
-                        ? NetworkImage(user.imageLoc!)
-                        : NetworkImage(stories[0].profileLoc!),
-                    // radius: ,
+                  child: GestureDetector(
+                    child: stories.isEmpty
+                        ? Stack(alignment: Alignment.bottomRight, children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.grey,
+                              backgroundImage: user.imageLoc == null
+                                  ? const AssetImage('assets/blankprofile.png')
+                                      as ImageProvider
+                                  : NetworkImage(user.imageLoc!),
+                              radius: 20.5.w,
+                            ),
+                            Positioned(
+                              left: 12.w,
+                              top: 4.4.h,
+                              child: IconButton(
+                                  onPressed: () {
+                                    PersistentNavBarNavigator.pushNewScreen(
+                                      context,
+                                      screen: (AddStoryView(
+                                        user: user,
+                                        stories: stories,
+                                      )),
+                                      withNavBar: false,
+                                      pageTransitionAnimation:
+                                          PageTransitionAnimation.slideRight,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.add_circle,
+                                    color: Colors.white,
+                                  )),
+                            )
+                          ])
+                        : CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            backgroundImage: stories[0].profileLoc == null
+                                ? const AssetImage('assets/blankprofile.png')
+                                    as ImageProvider
+                                : NetworkImage(stories[0].profileLoc!),
+                          ),
+                    onTap: () {},
                   )),
             ),
           ),

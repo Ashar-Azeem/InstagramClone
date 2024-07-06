@@ -8,8 +8,12 @@ import 'package:mysocialmediaapp/utilities/state.dart';
 class VisitingProfileView extends StatefulWidget {
   final Users ownerUser;
   final Users user;
+  final Future<void> Function()? rebuilt;
   const VisitingProfileView(
-      {super.key, required this.user, required this.ownerUser});
+      {super.key,
+      required this.user,
+      required this.ownerUser,
+      required this.rebuilt});
 
   @override
   State<VisitingProfileView> createState() => _VisitingProfileViewState();
@@ -391,6 +395,7 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                                                 index1: index,
                                                 personal: false,
                                                 user: ownerUser,
+                                                rebuilt: widget.rebuilt,
                                               ),
                                             ));
                                       },
@@ -415,7 +420,7 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                               );
                             } else {
                               return const LinearProgressIndicator(
-                                color: blueColor,
+                                color: Colors.white,
                                 minHeight: 2,
                               );
                             }
@@ -423,7 +428,7 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                         default:
                           {
                             return const LinearProgressIndicator(
-                              color: blueColor,
+                              color: Colors.white,
                               minHeight: 2,
                             );
                           }

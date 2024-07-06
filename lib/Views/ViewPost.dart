@@ -14,12 +14,14 @@ class ViewPost extends StatefulWidget {
   final List<Posts> posts;
   final int index1;
   final bool personal;
+  final Future<void> Function()? rebuilt;
   const ViewPost(
       {super.key,
       required this.posts,
       required this.index1,
       required this.personal,
-      required this.user});
+      required this.user,
+      this.rebuilt});
 
   @override
   State<ViewPost> createState() => _ViewPostState();
@@ -150,9 +152,12 @@ class _ViewPostState extends State<ViewPost> {
                                                   MaterialPageRoute(
                                                       builder: (context) =>
                                                           VisitingProfileView(
-                                                              user: user,
-                                                              ownerUser: widget
-                                                                  .user)));
+                                                            user: user,
+                                                            ownerUser:
+                                                                widget.user,
+                                                            rebuilt:
+                                                                widget.rebuilt,
+                                                          )));
                                             },
                                             child: Text(
                                                 "  ${posts[index].userName}",
@@ -323,6 +328,9 @@ class _ViewPostState extends State<ViewPost> {
                                 if (!isLiked) {
                                   await DataBase().addLike(posts[index], user);
                                   isLiked = true;
+                                  if (widget.rebuilt != null) {
+                                    await widget.rebuilt!();
+                                  }
                                 }
                               },
                             ),
@@ -360,6 +368,9 @@ class _ViewPostState extends State<ViewPost> {
                                               });
                                               await DataBase()
                                                   .addLike(posts[index], user);
+                                            }
+                                            if (widget.rebuilt != null) {
+                                              await widget.rebuilt!();
                                             }
                                           },
                                           icon: posts[index]

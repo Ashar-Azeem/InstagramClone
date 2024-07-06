@@ -48,6 +48,13 @@ class _HomeViewState extends State<HomeView>
     return [];
   }
 
+  Future<void> refresh() async {
+    var user = await db.getUser(ownerUser.userId, true);
+    setState(() {
+      ownerUser = user!;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -57,7 +64,7 @@ class _HomeViewState extends State<HomeView>
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
         // Note: Sensitivity is integer used when you don't want to mess up vertical drag
-        int sensitivity = 12;
+        int sensitivity = 10;
         if (details.delta.dx > sensitivity) {
           PersistentNavBarNavigator.pushNewScreen(
             context,
@@ -112,12 +119,7 @@ class _HomeViewState extends State<HomeView>
             },
             body: RefreshIndicator(
               color: Colors.white,
-              onRefresh: () async {
-                var user = await db.getUser(ownerUser.userId, true);
-                setState(() {
-                  ownerUser = user!;
-                });
-              },
+              onRefresh: refresh,
               child: Column(children: [
                 FutureBuilder(
                     future: DataBase().getStories(ownerUser),
@@ -128,8 +130,6 @@ class _HomeViewState extends State<HomeView>
                             data = snapshot.data as List<List<Story>>;
 
                             userStories = seperateOwnerUserStories(data);
-                            StoryCollection()
-                                .addAllStories(stories: userStories);
 
                             return Expanded(
                               child: ListView(children: [
@@ -150,17 +150,22 @@ class _HomeViewState extends State<HomeView>
                                                     builder: (context, value,
                                                         child) {
                                                       return StoryItem(
-                                                          stories: value,
-                                                          user: ownerUser);
+                                                        stories: userStories,
+                                                        user: ownerUser,
+                                                        allStoriesList: null,
+                                                      );
                                                     });
                                               }
                                               var followingStories =
                                                   data[index - 1];
                                               return StoryItem(
-                                                  stories: followingStories,
-                                                  user: ownerUser);
+                                                stories: followingStories,
+                                                user: ownerUser,
+                                                allStoriesList: data,
+                                              );
                                             }))),
                                 FirestorePagination(
+                                    isLive: true,
                                     shrinkWrap: true,
                                     viewType: ViewType.list,
                                     onEmpty: const Text('No Posts Available'),
@@ -192,12 +197,15 @@ class _HomeViewState extends State<HomeView>
                                         padding: const EdgeInsets.only(
                                             left: 6, right: 6),
                                         child: HomeScreenItems(
-                                            post: post,
-                                            ownerUser: ownerUser,
-                                            screenHeight: screenHeight,
-                                            screenWwidth: screenWidth,
-                                            seeMore: seeMore,
-                                            index: index),
+                                          post: post,
+                                          ownerUser: ownerUser,
+                                          screenHeight: screenHeight,
+                                          screenWwidth: screenWidth,
+                                          seeMore: seeMore,
+                                          index: index,
+                                          rebuilt: refresh,
+                                          stories: data,
+                                        ),
                                       );
                                     })
                               ]),

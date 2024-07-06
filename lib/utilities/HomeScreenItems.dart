@@ -1,5 +1,8 @@
 // ignore_for_file: file_names
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
@@ -15,6 +18,8 @@ class HomeScreenItems extends StatefulWidget {
   final double screenWwidth;
   final List<bool> seeMore;
   final int index;
+  final List<List<Story>> stories;
+  final Future<void> Function() rebuilt;
 
   const HomeScreenItems(
       {super.key,
@@ -23,7 +28,9 @@ class HomeScreenItems extends StatefulWidget {
       required this.screenHeight,
       required this.screenWwidth,
       required this.seeMore,
-      required this.index});
+      required this.index,
+      required this.rebuilt,
+      required this.stories});
 
   @override
   State<HomeScreenItems> createState() => _HomeScreenItemsState();
@@ -37,6 +44,7 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
   late List<bool> seeMore;
   late int index;
   bool isHeartAnimating = false;
+  late List<List<Story>> stories;
   @override
   void initState() {
     super.initState();
@@ -46,65 +54,105 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
     screenHeight = widget.screenHeight;
     seeMore = widget.seeMore;
     index = widget.index;
+    stories = widget.stories;
+  }
+
+  bool checkStory(Users user) {
+    for (List<Story> ls in stories) {
+      for (Story s in ls) {
+        if (s.userId == post.userId) {
+          if (!s.views.contains(user.userId)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     bool isLiked = post.likesList.contains(ownerUser.userId);
+
     return SizedBox(
       width: screenWidth,
       height: seeMore[index] == false ? screenHeight - 150 : screenHeight,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Row(
+          Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 5),
                   child: Container(
-                    width: 48.0,
-                    height: 48.0,
+                    padding: const EdgeInsets.all(2.5),
+                    width: 12.w,
+                    height: 12.w,
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white, // Border color
-                          width: 1.0, // Border width
-                        )),
-                    child: post.profLoc == null
-                        ? const CircleAvatar(
-                            backgroundColor: Colors.black,
-                            backgroundImage:
-                                AssetImage('assets/blankprofile.png'),
-                            radius: 30,
-                          )
-                        : CircleAvatar(
-                            backgroundColor: Colors.black,
-                            backgroundImage: NetworkImage(post.profLoc!),
-                            radius: 30,
-                          ),
+                        border: !checkStory(ownerUser)
+                            ? null
+                            : const GradientBoxBorder(
+                                gradient: LinearGradient(colors: [
+                                  Colors.yellow,
+                                  Colors.red,
+                                  Color.fromARGB(255, 255, 76, 243),
+                                  // Colors.red,
+                                ]),
+                                width: 1.5,
+                              )),
+                    child: GestureDetector(
+                      child: post.profLoc == null
+                          ? const CircleAvatar(
+                              backgroundColor: Colors.black,
+                              backgroundImage:
+                                  AssetImage('assets/blankprofile.png'),
+                              radius: 30,
+                            )
+                          : CircleAvatar(
+                              backgroundColor: Colors.black,
+                              backgroundImage: NetworkImage(post.profLoc!),
+                              radius: 30,
+                            ),
+                            onTap: (){
+                              // Open all the stories of the person whose post it is ...
+                            },
+                    ),
                   ),
                 ),
-                TextButton(
-                    onPressed: () async {
-                      Users user1 =
-                          await DataBase().getUser(post.userId, false) as Users;
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => VisitingProfileView(
-                                  user: user1, ownerUser: ownerUser)));
-                    },
-                    child: Text("  ${post.userName}",
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w500))),
+                InkWell(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 2.h),
+                    child: SizedBox(
+                      height: 10.w,
+                      child: Text("  ${post.userName}",
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  onTap: () async {
+                    Users user1 =
+                        await DataBase().getUser(post.userId, false) as Users;
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => VisitingProfileView(
+                                  user: user1,
+                                  ownerUser: ownerUser,
+                                  rebuilt: widget.rebuilt,
+                                )));
+                  },
+                ),
                 ownerUser.following.isEmpty
                     ? Padding(
-                        padding: EdgeInsets.only(left: 30.w),
+                        padding: EdgeInsets.only(left: 38.w),
                         child: InkWell(
                           child: Container(
-                            height: 33,
-                            width: 110,
+                            height: 8.5.w,
+                            width: 25.w,
                             decoration: BoxDecoration(
                               color: mobileBackgroundColor,
                               border: Border.all(color: Colors.white),
@@ -153,10 +201,8 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                           },
                         ),
                       )
-                    : const SizedBox.shrink()
-              ],
-            ),
-          ]),
+                    : const SizedBox.shrink(),
+              ]),
           Padding(
             padding: const EdgeInsets.only(top: 7),
             child: GestureDetector(

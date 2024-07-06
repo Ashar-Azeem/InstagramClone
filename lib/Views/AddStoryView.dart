@@ -105,7 +105,9 @@ class _AddStoryViewState extends State<AddStoryView> {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(const SnackBar(
                                                   content: Text(
-                                                      'Some Error Occured')));
+                                            'Some Error Occured',
+                                            style: TextStyle(color: Colors.red),
+                                          )));
                                         }
                                       });
                                     },
@@ -234,16 +236,24 @@ class _AddStoryViewState extends State<AddStoryView> {
                                       }
                                     },
                                     icon: const Icon(
-                                      Icons.add_a_photo,
-                                      size: 60,
+                                      Icons.add_a_photo_outlined,
+                                      size: 68,
                                       color: Color.fromARGB(255, 206, 205, 205),
+                                      shadows: [
+                                        Shadow(
+                                          color: Color.fromARGB(
+                                              255, 150, 149, 149),
+                                          offset: Offset(0, 2),
+                                          blurRadius: 120,
+                                        )
+                                      ],
                                     )),
                               ),
                             ),
                             Align(
                               alignment: Alignment.bottomLeft,
                               child: Padding(
-                                padding: EdgeInsets.only(left: 3, top: 40.h),
+                                padding: EdgeInsets.only(left: 3, top: 38.h),
                                 child: IconButton(
                                     onPressed: () async {
                                       story = await imagepicker(
@@ -255,6 +265,14 @@ class _AddStoryViewState extends State<AddStoryView> {
                                       }
                                     },
                                     icon: const Icon(Icons.image,
+                                        shadows: [
+                                          Shadow(
+                                            color: Color.fromARGB(
+                                                255, 150, 149, 149),
+                                            offset: Offset(0, 10),
+                                            blurRadius: 100,
+                                          )
+                                        ],
                                         size: 48,
                                         color: Color.fromARGB(
                                             255, 206, 205, 205))),

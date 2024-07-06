@@ -61,13 +61,21 @@ class _AddPostViewState extends State<AddPostView>
                               postProcess(post!, user, content1, context)
                                   .then((result) {
                                 setState(() {
-                                  content.text = '';
                                   loading = false;
                                 });
                                 if (result == 'success') {
                                   itemSelected = false;
+                                  content.text = '';
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Post Uploaded')));
                                 } else {
-                                  itemSelected = false;
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(const SnackBar(
+                                          content: Text(
+                                    'Some Error Occured',
+                                    style: TextStyle(color: Colors.red),
+                                  )));
                                 }
                               });
                             },
