@@ -1,8 +1,6 @@
 // ignore_for_file: file_names
 import 'dart:typed_data';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
@@ -11,8 +9,9 @@ import 'package:mysocialmediaapp/utilities/utilities.dart';
 import 'package:sizer/sizer.dart';
 
 class AddStoryView extends StatefulWidget {
+  final List<Story> stories;
   final Users user;
-  const AddStoryView({super.key, required this.user});
+  const AddStoryView({super.key, required this.user, required this.stories});
 
   @override
   State<AddStoryView> createState() => _AddStoryViewState();
@@ -89,11 +88,14 @@ class _AddStoryViewState extends State<AddStoryView> {
                                               content: content.text,
                                               context: context)
                                           .then((value) {
-                                        if (value) {
+                                        if (value != null) {
                                           setState(() {
                                             loading = false;
                                             itemSelected = false;
                                             content.text = '';
+                                            widget.stories.add(value);
+                                            StoryCollection()
+                                                .addStory(story: value);
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(const SnackBar(
                                                     content: Text(

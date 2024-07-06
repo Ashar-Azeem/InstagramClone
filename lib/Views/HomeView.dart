@@ -7,6 +7,7 @@ import 'package:mysocialmediaapp/Views/AddStoryView.dart';
 import 'package:mysocialmediaapp/Views/MessagesView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
+import 'package:mysocialmediaapp/utilities/StoryItem.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:sizer/sizer.dart';
@@ -27,11 +28,24 @@ class _HomeViewState extends State<HomeView>
   late Users ownerUser;
   DataBase db = DataBase();
   List<Posts> documents = [];
+  List<Story> userStories = [];
+  List<List<Story>> data = [];
   @override
   void initState() {
     super.initState();
     seeMore = List.filled(100, false);
     ownerUser = widget.user;
+  }
+
+  List<Story> seperateOwnerUserStories(List<List<Story>> total) {
+    for (List<Story> s in total) {
+      if (s[0].userId == ownerUser.userId) {
+        total.remove(s);
+        return s;
+      }
+    }
+
+    return [];
   }
 
   @override
@@ -49,6 +63,7 @@ class _HomeViewState extends State<HomeView>
             context,
             screen: (AddStoryView(
               user: ownerUser,
+              stories: userStories,
             )),
             withNavBar: false,
             pageTransitionAnimation: PageTransitionAnimation.slideRight,
@@ -95,116 +110,111 @@ class _HomeViewState extends State<HomeView>
                 ),
               ];
             },
-            body: Column(children: [
-              FutureBuilder(
-                  future: DataBase().getStories(),
-                  builder: (context, snapshot) {
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.done:
-                        {
-                          var data = snapshot.data as List<String>;
-                          return Expanded(
-                            child: ListView(children: [
-                              Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height /
-                                              7,
-                                      child: ListView.builder(
-                                          shrinkWrap: true,
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: data.length,
-                                          itemBuilder: (context, index) {
-                                            return Column(
-                                              children: [
-                                                InkWell(
-                                                  child: Container(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              3.5),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width /
-                                                              4,
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .height /
-                                                              10,
-                                                      decoration: BoxDecoration(
-                                                          shape:
-                                                              BoxShape.circle,
-                                                          border: Border.all(
-                                                            //Change the color of unseen stories
-                                                            color: const Color
-                                                                .fromARGB(255,
-                                                                61, 61, 65),
-                                                            width: 3,
-                                                          )),
-                                                      child: const CircleAvatar(
-                                                        backgroundColor:
-                                                            Colors.orange,
-                                                        radius: 20,
-                                                      )),
-                                                ),
-                                                Text(data[index])
-                                              ],
-                                            );
-                                          }))),
-                              FirestorePagination(
-                                  shrinkWrap: true,
-                                  viewType: ViewType.list,
-                                  onEmpty: const Text(
-                                      'No Exploring data is available at the moment'),
-                                  initialLoader: const Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                  bottomLoader: const Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                  limit: 12,
-                                  query: FirebaseFirestore.instance
-                                      .collection('posts')
-                                      .where('userId',
-                                          whereIn: ownerUser.following)
-                                      .orderBy('uploadDateTime',
-                                          descending: true),
-                                  itemBuilder: (context, snapshot, index) {
-                                    var post = getObject(snapshot);
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 6, right: 6),
-                                      child: HomeScreenItems(
-                                          post: post,
-                                          ownerUser: ownerUser,
-                                          screenHeight: screenHeight,
-                                          screenWwidth: screenWidth,
-                                          seeMore: seeMore,
-                                          index: index),
-                                    );
-                                  })
-                            ]),
-                          );
-                        }
+            body: RefreshIndicator(
+              color: Colors.white,
+              onRefresh: () async {
+                var user = await db.getUser(ownerUser.userId, true);
+                setState(() {
+                  ownerUser = user!;
+                });
+              },
+              child: Column(children: [
+                FutureBuilder(
+                    future: DataBase().getStories(ownerUser),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.done:
+                          {
+                            data = snapshot.data as List<List<Story>>;
 
-                      default:
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        );
-                    }
-                  }),
-            ]),
+                            userStories = seperateOwnerUserStories(data);
+                            StoryCollection()
+                                .addAllStories(stories: userStories);
+
+                            return Expanded(
+                              child: ListView(children: [
+                                Padding(
+                                    padding:
+                                        EdgeInsets.only(top: 5, bottom: 2.h),
+                                    child: SizedBox(
+                                        height: 13.5.h,
+                                        child: ListView.builder(
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: data.length + 1,
+                                            itemBuilder: (context, index) {
+                                              if (index == 0) {
+                                                return ValueListenableBuilder(
+                                                    valueListenable:
+                                                        StoryCollection(),
+                                                    builder: (context, value,
+                                                        child) {
+                                                      return StoryItem(
+                                                          stories: value,
+                                                          user: ownerUser);
+                                                    });
+                                              }
+                                              var followingStories =
+                                                  data[index - 1];
+                                              return StoryItem(
+                                                  stories: followingStories,
+                                                  user: ownerUser);
+                                            }))),
+                                FirestorePagination(
+                                    shrinkWrap: true,
+                                    viewType: ViewType.list,
+                                    onEmpty: const Text('No Posts Available'),
+                                    initialLoader: const SizedBox.shrink(),
+                                    bottomLoader: const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                    limit: 12,
+                                    query: ownerUser.following.isNotEmpty
+                                        ? FirebaseFirestore.instance
+                                            .collection('posts')
+                                            .where('userId',
+                                                whereIn: ownerUser.following)
+                                            .orderBy('uploadDateTime',
+                                                descending: true)
+                                        : FirebaseFirestore.instance
+                                            .collection('posts')
+                                            .orderBy('uploadDateTime',
+                                                descending: true)
+                                            .where(FieldPath.documentId,
+                                                whereIn:
+                                                    ownerUser.publicPosts!),
+                                    itemBuilder: (context, snapshot, index) {
+                                      var post = getObject(snapshot);
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 6, right: 6),
+                                        child: HomeScreenItems(
+                                            post: post,
+                                            ownerUser: ownerUser,
+                                            screenHeight: screenHeight,
+                                            screenWwidth: screenWidth,
+                                            seeMore: seeMore,
+                                            index: index),
+                                      );
+                                    })
+                              ]),
+                            );
+                          }
+
+                        default:
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          );
+                      }
+                    }),
+              ]),
+            ),
           ),
         ),
       ),

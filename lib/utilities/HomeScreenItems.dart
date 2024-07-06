@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
+import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
+import 'package:mysocialmediaapp/utilities/state.dart';
+import 'package:sizer/sizer.dart';
 
 class HomeScreenItems extends StatefulWidget {
   final Posts post;
@@ -94,7 +97,63 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                     },
                     child: Text("  ${post.userName}",
                         style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w500)))
+                            color: Colors.white, fontWeight: FontWeight.w500))),
+                ownerUser.following.isEmpty
+                    ? Padding(
+                        padding: EdgeInsets.only(left: 30.w),
+                        child: InkWell(
+                          child: Container(
+                            height: 33,
+                            width: 110,
+                            decoration: BoxDecoration(
+                              color: mobileBackgroundColor,
+                              border: Border.all(color: Colors.white),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Center(
+                                child: ownerUser.following.contains(post.userId)
+                                    ? const Text(
+                                        "Following",
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    : const Text(
+                                        "Follow",
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      )),
+                          ),
+                          onTap: () async {
+                            DataBase db = DataBase();
+                            Users otherUser =
+                                await db.getUser(post.userId, false) as Users;
+                            if (ownerUser.following.contains(post.userId)) {
+                              removeRelationship(otherUser, ownerUser, db)
+                                  .then((value) {
+                                if (value) {
+                                  setState(() {
+                                    //Updates the UI
+                                  });
+                                }
+                              });
+                            } else {
+                              addRelationship(otherUser, ownerUser, db)
+                                  .then((value) {
+                                if (value) {
+                                  setState(() {
+                                    //updates the UI
+                                  });
+                                }
+                              });
+                            }
+                          },
+                        ),
+                      )
+                    : const SizedBox.shrink()
               ],
             ),
           ]),

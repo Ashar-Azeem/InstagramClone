@@ -450,10 +450,48 @@ class DataBase {
     return null;
   }
 
-  Future<List<String>> getStories() async {
-    await Future.delayed(const Duration(seconds: 2));
-    var l = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-    return l;
+  bool checkCondition(List<Story> list, Story story) {
+    var c = list[0].userName == story.userName;
+    return c;
+  }
+
+  Future<List<List<Story>>> getStories(Users user) async {
+    Timestamp currentDate = Timestamp.fromDate(DateTime.now());
+    List<String> search =
+        user.following.isEmpty ? [] : List.from(user.following);
+    search.add(user.userId);
+    List<List<Story>> stories = [];
+    try {
+      var data = await storyCollection
+          .where('userId', whereIn: search)
+          .where('finishDateTime', isGreaterThan: currentDate)
+          .orderBy('finishDateTime', descending: true)
+          .get();
+
+      for (QueryDocumentSnapshot document in data.docs) {
+        Story story = makeStoryObject(document);
+
+        if (stories.isEmpty) {
+          stories.add([story]);
+        }
+
+        for (var i = 0; i < stories.length; i++) {
+          if (checkCondition(stories[i], story)) {
+            stories[i].add(story);
+            break;
+          }
+          if (i == stories.length - 1) {
+            stories.add([story]);
+            break;
+          }
+        }
+      }
+
+      return stories;
+    } catch (e) {
+      print(e);
+    }
+    return stories;
   }
 
   Future<Users?> getUser(String userId, bool getPublicPosts) async {
@@ -542,7 +580,7 @@ class DataBase {
     }
   }
 
-  Future<bool> uploadStory(
+  Future<Story?> uploadStory(
       {required String userName,
       required String userId,
       required String storyImageLoc,
@@ -555,7 +593,7 @@ class DataBase {
       Timestamp fireStoreDate1 = Timestamp.fromDate(currentDateTime);
       Timestamp fireStoreDate2 = Timestamp.fromDate(finishDateTime);
 
-      await storyCollection.add({
+      var id = await storyCollection.add({
         'userId': userId,
         'userName': userName,
         'profileLoc': profileLoc,
@@ -565,12 +603,13 @@ class DataBase {
         'storyImageLoc': storyImageLoc,
         'views': views,
       });
-
-      return true;
+      Story story = Story(content, finishDateTime, profileLoc, id.id,
+          storyImageLoc, currentDateTime, userId, userName, views);
+      return story;
     } catch (e) {
       print(e);
     }
-    return false;
+    return null;
   }
 
   Future<bool> insertComments(Comments comment) async {
@@ -784,6 +823,39 @@ class Followers extends ValueNotifier<List<String>> {
 
   void clear() {
     value.clear();
+    notifyListeners();
+  }
+}
+
+class StoryCollection extends ValueNotifier<List<Story>> {
+  //singleton class so only instance exists
+  StoryCollection._sharedInstance() : super([]);
+  static final StoryCollection _shared = StoryCollection._sharedInstance();
+  factory StoryCollection() => _shared;
+
+  void addStory({required Story story}) {
+    for (Story s in value) {
+      //If same post is added again then the view becomes redundant
+      if (s.storyId == story.storyId) {
+        return;
+      }
+    }
+    value.add(story);
+    notifyListeners();
+  }
+
+  void addAllStories({required List<Story> stories}) {
+    value.addAll(stories);
+    notifyListeners();
+  }
+
+  void clear() {
+    value.clear();
+    notifyListeners();
+  }
+
+  void removePost({required Story story}) {
+    value.remove(story);
     notifyListeners();
   }
 }

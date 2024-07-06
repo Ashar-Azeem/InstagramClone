@@ -49,6 +49,8 @@ dependencies:
   persistent_bottom_nav_bar: ^5.0.2
   firebase_pagination: ^3.1.0
   sizer: ^2.0.15
+  gradient_borders: ^1.0.1
+  story_view: ^0.16.5
 
 dev_dependencies:
   flutter_test:

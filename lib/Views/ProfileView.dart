@@ -67,6 +67,7 @@ class _ProfileViewState extends State<ProfileView>
                   PostsCollection().clear();
                   Following().clear();
                   Followers().clear();
+                  StoryCollection().clear();
                   await AuthService().logout();
                   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                     MaterialPageRoute(

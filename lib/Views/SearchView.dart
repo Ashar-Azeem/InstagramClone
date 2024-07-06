@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
@@ -18,6 +19,7 @@ class SearchView extends StatefulWidget {
 
 class _SearchViewState extends State<SearchView>
     with AutomaticKeepAliveClientMixin {
+  bool rebuilt = false;
   late Users user;
   List<Posts> documents = [];
   DataBase db = DataBase();
@@ -37,142 +39,157 @@ class _SearchViewState extends State<SearchView>
     documents.add(post);
   }
 
+  Future<void> refresh() async {
+    var user1 = await db.getUser(user.userId, true);
+    setState(() {
+      user = user1!;
+      rebuilt = !rebuilt;
+      documents = [];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(slivers: [
-          SliverAppBar(
-            pinned: true,
-            forceMaterialTransparency: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0.0,
-            centerTitle: true,
-            title: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  fixedSize: Size(MediaQuery.of(context).size.width - 25,
-                      ((MediaQuery.of(context).size.height) / 100) * 5),
-                  backgroundColor: Colors.grey.shade900,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50)),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => SearchBarView(
-                                user: user,
-                              )));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.search,
-                      color: Colors.white,
-                    ),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 17),
-                        child: Text(
-                          'Search',
-                          style: TextStyle(
-                              fontSize: 17, color: Colors.grey.shade400),
-                        ))
-                  ],
-                )),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.only(left: 5, right: 5),
-            sliver: SliverToBoxAdapter(
-              child: FirestorePagination(
-                isLive: true,
-                shrinkWrap: true,
-                viewType: ViewType.grid,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 2,
-                    mainAxisSpacing: 2,
-                    childAspectRatio: 0.945),
-                onEmpty:
-                    const Text('No Exploring data is available at the moment'),
-                initialLoader: const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
+      body: RefreshIndicator(
+        onRefresh: refresh,
+        color: Colors.white,
+        child: SafeArea(
+          child: CustomScrollView(slivers: [
+            SliverAppBar(
+              pinned: true,
+              forceMaterialTransparency: true,
+              backgroundColor: Colors.transparent,
+              elevation: 0.0,
+              centerTitle: true,
+              title: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    fixedSize: Size(MediaQuery.of(context).size.width - 25,
+                        ((MediaQuery.of(context).size.height) / 100) * 5),
+                    backgroundColor: Colors.grey.shade900,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50)),
                   ),
-                ),
-                bottomLoader: const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                ),
-                limit: 18,
-                query: FirebaseFirestore.instance
-                    .collection('posts')
-                    .orderBy('uploadDateTime', descending: true)
-                    .where(FieldPath.documentId, whereIn: user.publicPosts!),
-                itemBuilder: (context, snapshot, index) {
-                  var post = getObject(snapshot);
-                  check(post);
-                  // if (user.following.contains(post.userId)) {
-                  //   return SizedBox.shrink();
-                  // }
-                  return InkWell(
-                      onTap: () async {
-                        Posts post = documents[index];
-                        List<Posts> sublist = documents
-                            .where((element) => element.userId == post.userId)
-                            .toList();
-
-                        var range = 12;
-                        var length = sublist.length;
-                        if (length < range) {
-                          for (var i = 0; i < range - length; i++) {
-                            var l = documents
-                                .where((element) => !sublist.contains(element))
-                                .toList();
-                            var element = Random().nextInt(l.length);
-                            sublist.add(l[element]);
-                          }
-                        }
-                        sublist.removeWhere(
-                            (element) => element.postId == post.postId);
-                        sublist.shuffle();
-                        sublist.insert(0, post);
-
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ViewPost(
-                                posts: sublist,
-                                index1: 0,
-                                personal: false,
-                                user: user,
-                              ),
-                            ));
-                      },
-                      child: Material(
-                        type: MaterialType.transparency,
-                        child: Container(
-                            decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 38, 38, 38),
-                          borderRadius: BorderRadius.circular(0),
-                          image: DecorationImage(
-                            image: NetworkImage(
-                              post.postLoc,
-                            ),
-                            fit: BoxFit.cover,
-                          ),
-                        )),
-                      ));
-                },
-              ),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SearchBarView(
+                                  user: user,
+                                )));
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.search,
+                        color: Colors.white,
+                      ),
+                      Padding(
+                          padding: const EdgeInsets.only(left: 17),
+                          child: Text(
+                            'Search',
+                            style: TextStyle(
+                                fontSize: 17, color: Colors.grey.shade400),
+                          ))
+                    ],
+                  )),
             ),
-          )
-        ]),
+            SliverPadding(
+              padding: const EdgeInsets.only(left: 5, right: 5),
+              sliver: SliverToBoxAdapter(
+                child: FirestorePagination(
+                  key: ValueKey(rebuilt),
+                  isLive: true,
+                  shrinkWrap: true,
+                  viewType: ViewType.grid,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 2,
+                      mainAxisSpacing: 2,
+                      childAspectRatio: 0.945),
+                  onEmpty: const Text(
+                      'No Exploring data is available at the moment'),
+                  initialLoader: const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                  bottomLoader: const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                  limit: 18,
+                  query: FirebaseFirestore.instance
+                      .collection('posts')
+                      .orderBy('uploadDateTime', descending: true)
+                      .where(FieldPath.documentId, whereIn: user.publicPosts!),
+                  itemBuilder: (context, snapshot, index) {
+                    var post = getObject(snapshot);
+                    check(post);
+                    // if (user.following.contains(post.userId)) {
+                    //   return SizedBox.shrink();
+                    // }
+                    return InkWell(
+                        onTap: () async {
+                          Posts post = documents[index];
+                          List<Posts> sublist = documents
+                              .where((element) => element.userId == post.userId)
+                              .toList();
+
+                          var range = 12;
+                          var length = sublist.length;
+                          if (length < range) {
+                            for (var i = 0; i < range - length; i++) {
+                              var l = documents
+                                  .where(
+                                      (element) => !sublist.contains(element))
+                                  .toList();
+                              var element = Random().nextInt(l.length);
+                              sublist.add(l[element]);
+                            }
+                          }
+                          sublist.removeWhere(
+                              (element) => element.postId == post.postId);
+                          sublist.shuffle();
+                          sublist.insert(0, post);
+
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewPost(
+                                  posts: sublist,
+                                  index1: 0,
+                                  personal: false,
+                                  user: user,
+                                ),
+                              ));
+                        },
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: Container(
+                              decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 38, 38, 38),
+                            borderRadius: BorderRadius.circular(0),
+                            image: DecorationImage(
+                              image: NetworkImage(
+                                post.postLoc,
+                              ),
+                              fit: BoxFit.cover,
+                            ),
+                          )),
+                        ));
+                  },
+                ),
+              ),
+            )
+          ]),
+        ),
       ),
     );
   }
