@@ -360,6 +360,7 @@ class _ViewPostState extends State<ViewPost> {
                                                   posts[index], user);
                                             } else {
                                               setState(() {
+                                                isHeartAnimating = true;
                                                 isLiked = true;
                                                 posts[index]
                                                     .likesList

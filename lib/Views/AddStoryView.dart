@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
@@ -201,7 +202,9 @@ class _AddStoryViewState extends State<AddStoryView> {
                                           left: 13, right: 0),
                                       child: SizedBox(
                                         width: 68.w,
+                                        height: 10.h,
                                         child: TextField(
+                                          maxLength: 90,
                                           cursorColor: Colors.white,
                                           style: const TextStyle(
                                               fontWeight: FontWeight.normal),
@@ -209,6 +212,7 @@ class _AddStoryViewState extends State<AddStoryView> {
                                           autocorrect: false,
                                           enableSuggestions: true,
                                           decoration: const InputDecoration(
+                                              counterText: '',
                                               border: InputBorder.none,
                                               hintText: 'Enter Your Caption'),
                                         ),

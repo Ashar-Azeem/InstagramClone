@@ -52,7 +52,16 @@ class _HomeViewState extends State<HomeView>
     var user = await db.getUser(ownerUser.userId, true);
     setState(() {
       ownerUser = user!;
+      data.clear();
+      userStories.clear();
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    data.clear();
+    userStories.clear();
   }
 
   @override

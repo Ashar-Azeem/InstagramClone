@@ -106,19 +106,19 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                     child: GestureDetector(
                       child: post.profLoc == null
                           ? const CircleAvatar(
-                              backgroundColor: Colors.black,
+                              backgroundColor: Colors.grey,
                               backgroundImage:
                                   AssetImage('assets/blankprofile.png'),
                               radius: 30,
                             )
                           : CircleAvatar(
-                              backgroundColor: Colors.black,
+                              backgroundColor: Colors.grey,
                               backgroundImage: NetworkImage(post.profLoc!),
                               radius: 30,
                             ),
-                            onTap: (){
-                              // Open all the stories of the person whose post it is ...
-                            },
+                      onTap: () {
+                        // Open all the stories of the person whose post it is ...
+                      },
                     ),
                   ),
                 ),
@@ -268,6 +268,7 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                               await DataBase().removeLike(post, ownerUser);
                             } else {
                               setState(() {
+                                isHeartAnimating = true;
                                 isLiked = true;
                                 post.likesList.add(ownerUser.userId);
                                 post.totalLikes += 1;

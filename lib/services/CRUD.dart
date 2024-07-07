@@ -362,6 +362,27 @@ class DataBase {
     return false;
   }
 
+  Future<bool> addView(Story story, Users user) async {
+    try {
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentReference storyRefrence = storyCollection.doc(story.storyId);
+
+        transaction.update(storyRefrence, {
+          'views': FieldValue.arrayUnion([user.userId])
+        });
+      });
+
+      if (!story.views.contains(user.userId)) {
+        story.views.add(user.userId);
+      }
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
   Future<void> addPost(
       String userId,
       String userName,
@@ -477,25 +498,24 @@ class DataBase {
       var data = await storyCollection
           .where('userId', whereIn: search)
           .where('finishDateTime', isGreaterThan: currentDate)
-          .orderBy('finishDateTime', descending: true)
+          .orderBy('finishDateTime', descending: false)
           .get();
 
       for (QueryDocumentSnapshot document in data.docs) {
         Story story = makeStoryObject(document);
 
-        if (stories.isEmpty) {
-          stories.add([story]);
-        }
-
         for (var i = 0; i < stories.length; i++) {
           if (checkCondition(stories[i], story)) {
             stories[i].add(story);
             break;
-          }
-          if (i == stories.length - 1) {
+          } else if (i == stories.length - 1) {
             stories.add([story]);
             break;
           }
+        }
+
+        if (stories.isEmpty) {
+          stories.add([story]);
         }
       }
 
@@ -853,7 +873,7 @@ class StoryCollection extends ValueNotifier<List<Story>> {
       }
     }
     value.add(story);
-    print('added');
+
     notifyListeners();
   }
 
