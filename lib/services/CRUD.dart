@@ -114,8 +114,11 @@ class DataBase {
       DocumentReference ref = userCollection.doc(user.userId);
       await ref.update({'profileLocation': url});
 
-      QuerySnapshot storySnapShot =
-          await storyCollection.where('userId', isEqualTo: user.userId).get();
+      Timestamp now = Timestamp.fromDate(DateTime.now());
+      QuerySnapshot storySnapShot = await storyCollection
+          .where('userId', isEqualTo: user.userId)
+          .where('finishDateTime', isGreaterThan: now)
+          .get();
       for (QueryDocumentSnapshot documentSnapshot in storySnapShot.docs) {
         DocumentReference documentRef =
             storyCollection.doc(documentSnapshot.id);
@@ -621,12 +624,11 @@ class DataBase {
   }
 
   Future<Story?> uploadStory(
-      {required String userName,
-      required String userId,
+      {required String userId,
       required String storyImageLoc,
-      required String? profileLoc,
       required String? content}) async {
     try {
+      Users user = await getUser(userId, false) as Users;
       DateTime currentDateTime = DateTime.now();
       DateTime finishDateTime = currentDateTime.add(const Duration(hours: 24));
       List<String> views = [];
@@ -635,16 +637,16 @@ class DataBase {
 
       var id = await storyCollection.add({
         'userId': userId,
-        'userName': userName,
-        'profileLoc': profileLoc,
+        'userName': user.userName,
+        'profileLoc': user.imageLoc,
         'uploadDateTime': fireStoreDate1,
         'content': content,
         'finishDateTime': fireStoreDate2,
         'storyImageLoc': storyImageLoc,
         'views': views,
       });
-      Story story = Story(content, finishDateTime, profileLoc, id.id,
-          storyImageLoc, currentDateTime, userId, userName, views);
+      Story story = Story(content, finishDateTime, user.imageLoc, id.id,
+          storyImageLoc, currentDateTime, userId, user.userName, views);
       return story;
     } catch (e) {
       print(e);

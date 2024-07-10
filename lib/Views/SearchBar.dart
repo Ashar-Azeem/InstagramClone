@@ -4,8 +4,9 @@ import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 
 class SearchBarView extends StatefulWidget {
+  final bool messaging;
   final Users user;
-  const SearchBarView({super.key, required this.user});
+  const SearchBarView({super.key, required this.user, required this.messaging});
 
   @override
   State<SearchBarView> createState() => _SearchBarViewState();
@@ -82,16 +83,18 @@ class _SearchBarViewState extends State<SearchBarView> {
                                   left: 20, right: 10, top: 20),
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            VisitingProfileView(
-                                              user: users[index],
-                                              ownerUser: user,
-                                              rebuilt: null,
-                                            )),
-                                  );
+                                  if (!widget.messaging) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              VisitingProfileView(
+                                                user: users[index],
+                                                ownerUser: user,
+                                                rebuilt: null,
+                                              )),
+                                    );
+                                  } else {}
                                 },
                                 child: SizedBox(
                                   height: 70,

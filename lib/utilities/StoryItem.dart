@@ -52,6 +52,12 @@ class _StoryItemState extends State<StoryItem> {
     return true;
   }
 
+  void changeProfile(List<Story> userStories, String? newUrl) {
+    for (Story s in userStories) {
+      s.profileLoc = newUrl;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -132,7 +138,9 @@ class _StoryItemState extends State<StoryItem> {
                                     ? const AssetImage(
                                             'assets/blankprofile.png')
                                         as ImageProvider
-                                    : NetworkImage(stories[0].profileLoc!),
+                                    : (stories[0].userId == user.userId
+                                        ? NetworkImage(value!)
+                                        : NetworkImage(stories[0].profileLoc!)),
                               ),
                         onTap: () {
                           if (stories.isEmpty) {
@@ -147,6 +155,10 @@ class _StoryItemState extends State<StoryItem> {
                                   PageTransitionAnimation.slideRight,
                             );
                           } else if (allStoriesList == null) {
+                            //if the profile picture is changed we have to update the user's profile in the stories section of current user
+                            if (stories[0].profileLoc != value) {
+                              changeProfile(stories, value);
+                            }
                             PersistentNavBarNavigator.pushNewScreen(
                               context,
                               screen: (ViewStory(

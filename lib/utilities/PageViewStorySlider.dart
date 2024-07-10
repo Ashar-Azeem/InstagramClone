@@ -75,6 +75,9 @@ class _StoryTransitionsState extends State<StoryTransitions> {
   @override
   void dispose() {
     controller.dispose();
+    for (var i = 0; i < controllers.length; i++) {
+      controllers[i].dispose();
+    }
     super.dispose();
   }
 

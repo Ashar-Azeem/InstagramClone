@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 class SearchView extends StatefulWidget {
   final Users user;
@@ -72,12 +73,13 @@ class _SearchViewState extends State<SearchView>
                         borderRadius: BorderRadius.circular(50)),
                   ),
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SearchBarView(
-                                  user: user,
-                                )));
+                    PersistentNavBarNavigator.pushNewScreen(
+                      context,
+                      screen: (SearchBarView(messaging: false, user: user)),
+                      withNavBar: true,
+                      pageTransitionAnimation:
+                          PageTransitionAnimation.cupertino,
+                    );
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,

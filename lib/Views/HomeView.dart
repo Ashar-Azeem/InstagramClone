@@ -8,7 +8,6 @@ import 'package:mysocialmediaapp/Views/MessagesView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
 import 'package:mysocialmediaapp/utilities/StoriesList.dart';
-import 'package:mysocialmediaapp/utilities/StoryItem.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:sizer/sizer.dart';
@@ -89,7 +88,9 @@ class _HomeViewState extends State<HomeView>
         } else if (details.delta.dx < -sensitivity) {
           PersistentNavBarNavigator.pushNewScreen(
             context,
-            screen: (const MessagesView()),
+            screen: (MessagesView(
+              user: ownerUser,
+            )),
             withNavBar: false,
             pageTransitionAnimation: PageTransitionAnimation.cupertino,
           );
@@ -115,7 +116,17 @@ class _HomeViewState extends State<HomeView>
                           height: 36,
                         ),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: (MessagesView(
+                                user: ownerUser,
+                              )),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.cupertino,
+                            );
+                          },
                           icon: Image.asset(
                             'assets/messageIcon.png',
                             height: 30,

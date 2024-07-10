@@ -82,10 +82,8 @@ class _AddStoryViewState extends State<AddStoryView> {
                                       });
 
                                       postStoryProcess(
-                                              userName: user.userName,
                                               userId: user.userId,
                                               storyImage: story!,
-                                              profileLoc: user.imageLoc,
                                               content: content.text,
                                               context: context)
                                           .then((value) {
@@ -97,18 +95,7 @@ class _AddStoryViewState extends State<AddStoryView> {
                                             widget.stories.add(value);
                                             StoryCollection()
                                                 .addStory(story: value);
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                                    content: Text(
-                                                        'Story Uploaded')));
                                           });
-                                        } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  content: Text(
-                                            'Some Error Occured',
-                                            style: TextStyle(color: Colors.red),
-                                          )));
                                         }
                                       });
                                     },

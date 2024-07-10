@@ -79,10 +79,8 @@ class _CustomViewSheetState extends State<CustomViewSheet> {
                           var user = getObject(snapshot);
                           var heightOfBox = 7.h;
                           return Padding(
-                            padding: const EdgeInsets.only(
-                              left: 14,
-                              right: 14,
-                            ),
+                            padding: EdgeInsets.only(
+                                left: 14, right: 14, bottom: 3.h),
                             child: SizedBox(
                               height: heightOfBox,
                               width: 90.w,
@@ -103,7 +101,7 @@ class _CustomViewSheetState extends State<CustomViewSheet> {
                                           radius: 7.w,
                                         ),
                                   Padding(
-                                    padding: EdgeInsets.only(left: 2.w),
+                                    padding: EdgeInsets.only(left: 4.w),
                                     child: Text(
                                       user.userName,
                                       style: const TextStyle(

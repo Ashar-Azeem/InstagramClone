@@ -131,9 +131,7 @@ class _ViewStoryState extends State<ViewStory>
               if (!story.views.contains(user.userId)) {
                 DataBase().addView(story, user).then((value) {
                   if (value) {
-                    print('bottom rebuilt');
                     if (widget.rebuilt != null) {
-                      print('bottom rebuilt in');
                       widget.rebuilt!();
                     }
                   }

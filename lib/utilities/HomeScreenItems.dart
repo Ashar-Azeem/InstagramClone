@@ -1,8 +1,6 @@
 // ignore_for_file: file_names
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
@@ -90,36 +88,18 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                     padding: const EdgeInsets.all(2.5),
                     width: 12.w,
                     height: 12.w,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: !checkStory(ownerUser)
-                            ? null
-                            : const GradientBoxBorder(
-                                gradient: LinearGradient(colors: [
-                                  Colors.yellow,
-                                  Colors.red,
-                                  Color.fromARGB(255, 255, 76, 243),
-                                  // Colors.red,
-                                ]),
-                                width: 1.5,
-                              )),
-                    child: GestureDetector(
-                      child: post.profLoc == null
-                          ? const CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              backgroundImage:
-                                  AssetImage('assets/blankprofile.png'),
-                              radius: 30,
-                            )
-                          : CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              backgroundImage: NetworkImage(post.profLoc!),
-                              radius: 30,
-                            ),
-                      onTap: () {
-                        // Open all the stories of the person whose post it is ...
-                      },
-                    ),
+                    child: post.profLoc == null
+                        ? const CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            backgroundImage:
+                                AssetImage('assets/blankprofile.png'),
+                            radius: 30,
+                          )
+                        : CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            backgroundImage: NetworkImage(post.profLoc!),
+                            radius: 30,
+                          ),
                   ),
                 ),
                 InkWell(
