@@ -3,19 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:mysocialmediaapp/Views/AddStoryView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
+import 'package:mysocialmediaapp/utilities/PageViewStorySlider.dart';
 import 'package:mysocialmediaapp/utilities/ViewStory.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:sizer/sizer.dart';
 
 class StoryItem extends StatefulWidget {
   final Users user;
+
   final List<Story> stories;
   final List<List<Story>>? allStoriesList;
-  const StoryItem(
-      {super.key,
-      required this.stories,
-      required this.user,
-      required this.allStoriesList});
+  final void Function()? rebuilt;
+  const StoryItem({
+    super.key,
+    required this.stories,
+    required this.user,
+    required this.allStoriesList,
+    this.rebuilt,
+  });
 
   @override
   State<StoryItem> createState() => _StoryItemState();
@@ -35,7 +40,6 @@ class _StoryItemState extends State<StoryItem> {
   }
 
   void rebuilt() {
-    print('rebuilt');
     setState(() {});
   }
 
@@ -81,72 +85,95 @@ class _StoryItemState extends State<StoryItem> {
                                   ]),
                             width: 3.5,
                           )),
-                child: GestureDetector(
-                  child: stories.isEmpty
-                      ? Stack(alignment: Alignment.bottomRight, children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.grey,
-                            backgroundImage: user.imageLoc == null
-                                ? const AssetImage('assets/blankprofile.png')
-                                    as ImageProvider
-                                : NetworkImage(user.imageLoc!),
-                            radius: 20.5.w,
-                          ),
-                          Positioned(
-                            left: 12.w,
-                            top: 4.4.h,
-                            child: IconButton(
-                                onPressed: () {
-                                  PersistentNavBarNavigator.pushNewScreen(
-                                    context,
-                                    screen: (AddStoryView(
-                                      user: user,
-                                      stories: stories,
-                                    )),
-                                    withNavBar: false,
-                                    pageTransitionAnimation:
-                                        PageTransitionAnimation.slideRight,
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.add_circle,
-                                  color: Colors.white,
-                                )),
-                          )
-                        ])
-                      : CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          backgroundImage: stories[0].profileLoc == null
-                              ? const AssetImage('assets/blankprofile.png')
-                                  as ImageProvider
-                              : NetworkImage(stories[0].profileLoc!),
-                        ),
-                  onTap: () {
-                    if (stories.isEmpty) {
-                      PersistentNavBarNavigator.pushNewScreen(
-                        context,
-                        screen: (AddStoryView(
-                          user: user,
-                          stories: stories,
-                        )),
-                        withNavBar: false,
-                        pageTransitionAnimation:
-                            PageTransitionAnimation.slideRight,
+                child: ValueListenableBuilder(
+                    valueListenable: ProfilePicture(),
+                    builder: (context, value, child) {
+                      return GestureDetector(
+                        child: stories.isEmpty
+                            ? Stack(
+                                alignment: Alignment.bottomRight,
+                                children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.grey,
+                                      backgroundImage: value == null
+                                          ? const AssetImage(
+                                                  'assets/blankprofile.png')
+                                              as ImageProvider
+                                          : NetworkImage(value),
+                                      radius: 20.5.w,
+                                    ),
+                                    Positioned(
+                                      left: 12.w,
+                                      top: 4.4.h,
+                                      child: IconButton(
+                                          onPressed: () {
+                                            PersistentNavBarNavigator
+                                                .pushNewScreen(
+                                              context,
+                                              screen: (AddStoryView(
+                                                user: user,
+                                                stories: stories,
+                                              )),
+                                              withNavBar: false,
+                                              pageTransitionAnimation:
+                                                  PageTransitionAnimation
+                                                      .slideRight,
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.add_circle,
+                                            color: Colors.white,
+                                          )),
+                                    )
+                                  ])
+                            : CircleAvatar(
+                                backgroundColor: Colors.grey,
+                                backgroundImage: stories[0].profileLoc == null
+                                    ? const AssetImage(
+                                            'assets/blankprofile.png')
+                                        as ImageProvider
+                                    : NetworkImage(stories[0].profileLoc!),
+                              ),
+                        onTap: () {
+                          if (stories.isEmpty) {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: (AddStoryView(
+                                user: user,
+                                stories: stories,
+                              )),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.slideRight,
+                            );
+                          } else if (allStoriesList == null) {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: (ViewStory(
+                                user: user,
+                                currentUsersStory: stories,
+                                rebuilt: rebuilt,
+                              )),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.fade,
+                            );
+                          } else {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: (StoryTransitions(
+                                  rebuilt: widget.rebuilt,
+                                  allStories: allStoriesList!,
+                                  currentStoryUserId: stories[0].userId,
+                                  user: user)),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.fade,
+                            );
+                          }
+                        },
                       );
-                    } else if (allStoriesList == null) {
-                      PersistentNavBarNavigator.pushNewScreen(
-                        context,
-                        screen: (ViewStory(
-                          user: user,
-                          currentUsersStory: stories,
-                          rebuilt: rebuilt,
-                        )),
-                        withNavBar: false,
-                        pageTransitionAnimation: PageTransitionAnimation.fade,
-                      );
-                    }
-                  },
-                )),
+                    })),
           ),
           stories.isEmpty
               ? const Text(

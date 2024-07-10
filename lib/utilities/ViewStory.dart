@@ -1,4 +1,5 @@
 // ignore_for_file: file_names
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/ViewsOfStories.dart';
@@ -8,35 +9,40 @@ import 'package:story_view/story_view.dart';
 class ViewStory extends StatefulWidget {
   final Users user;
   final List<Story> currentUsersStory;
+  final StoryController? controller;
   final void Function()? rebuilt;
+  final VoidCallback? oncomplete;
 
   const ViewStory(
       {super.key,
       required this.user,
       required this.currentUsersStory,
-      this.rebuilt});
+      this.rebuilt,
+      this.controller,
+      this.oncomplete});
 
   @override
   State<ViewStory> createState() => _ViewStoryState();
 }
 
-class _ViewStoryState extends State<ViewStory> {
-  StoryController controller = StoryController();
+class _ViewStoryState extends State<ViewStory>
+    with AutomaticKeepAliveClientMixin {
+  late StoryController controller;
   late Users user;
   late List<Story> currentUsersStory;
   List<StoryItem> storyItems = [];
   int currentIndex = 0;
+  Rebuilt built = Rebuilt();
 
   @override
   void dispose() {
+    Rebuilt().value = null;
     super.dispose();
     controller.dispose();
-    Rebuilt().value = null;
   }
 
   void moveController() {
     int unseen = unSeenStoryIndex();
-
     for (var i = 0; i < unseen; i++) {
       controller.next();
     }
@@ -58,7 +64,14 @@ class _ViewStoryState extends State<ViewStory> {
     super.initState();
     user = widget.user;
     currentUsersStory = widget.currentUsersStory;
-
+    if (widget.controller == null) {
+      controller = StoryController();
+    } else {
+      controller = widget.controller!;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      moveController();
+    });
     for (var story in currentUsersStory) {
       storyItems.add(StoryItem.pageImage(
         imageFit: BoxFit.contain,
@@ -76,18 +89,15 @@ class _ViewStoryState extends State<ViewStory> {
                     fontWeight: FontWeight.w500),
               ),
         duration: const Duration(
-          seconds: 10,
+          seconds: 6,
         ),
       ));
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        moveController();
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return GestureDetector(
       onVerticalDragUpdate: (details) {
         int sensitivity = 10;
@@ -104,17 +114,26 @@ class _ViewStoryState extends State<ViewStory> {
             storyItems: storyItems,
             controller: controller,
             onComplete: () {
-              Navigator.of(context).pop();
+              if (currentUsersStory[0].userId ==
+                  FirebaseAuth.instance.currentUser!.uid) {
+                Navigator.of(context).pop();
+              }
+              if (widget.oncomplete != null) {
+                widget.oncomplete!();
+              }
             },
             onStoryShow: (storyItem, index) async {
               currentIndex = index;
               var story = currentUsersStory.elementAt(index);
+              StoryCollection().addStory(story: story);
+              built.set(story: story);
 
-              Rebuilt().set(story: story);
               if (!story.views.contains(user.userId)) {
                 DataBase().addView(story, user).then((value) {
                   if (value) {
+                    print('bottom rebuilt');
                     if (widget.rebuilt != null) {
+                      print('bottom rebuilt in');
                       widget.rebuilt!();
                     }
                   }
@@ -129,7 +148,7 @@ class _ViewStoryState extends State<ViewStory> {
                 right: 16,
               ),
               child: ValueListenableBuilder(
-                  valueListenable: Rebuilt(),
+                  valueListenable: built,
                   builder: (context, value, child) {
                     DateTime now = DateTime.now();
                     var durationHour =
@@ -209,12 +228,13 @@ class _ViewStoryState extends State<ViewStory> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class Rebuilt extends ValueNotifier<Story?> {
-  Rebuilt._sharedInstance() : super(null);
-  static final Rebuilt _shared = Rebuilt._sharedInstance();
-  factory Rebuilt() => _shared;
+  Rebuilt() : super(null);
 
   void set({required Story story}) {
     value = story;

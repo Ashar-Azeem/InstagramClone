@@ -141,7 +141,7 @@ class _ProfileViewState extends State<ProfileView>
                             ValueListenableBuilder(
                                 valueListenable: ProfilePicture(),
                                 builder: (context, value, child) {
-                                  return user.imageLoc == null
+                                  return value == null
                                       ? Container(
                                           width: 85.0,
                                           height: 85.0,

@@ -114,6 +114,14 @@ class DataBase {
       DocumentReference ref = userCollection.doc(user.userId);
       await ref.update({'profileLocation': url});
 
+      QuerySnapshot storySnapShot =
+          await storyCollection.where('userId', isEqualTo: user.userId).get();
+      for (QueryDocumentSnapshot documentSnapshot in storySnapShot.docs) {
+        DocumentReference documentRef =
+            storyCollection.doc(documentSnapshot.id);
+        await documentRef.update({'profileLoc': url});
+      }
+
       QuerySnapshot querySnapshot =
           await postCollection.where('userId', isEqualTo: user.userId).get();
 
@@ -884,11 +892,6 @@ class StoryCollection extends ValueNotifier<List<Story>> {
 
   void clear() {
     value.clear();
-    notifyListeners();
-  }
-
-  void removePost({required Story story}) {
-    value.remove(story);
     notifyListeners();
   }
 }

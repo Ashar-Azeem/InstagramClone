@@ -7,6 +7,7 @@ import 'package:mysocialmediaapp/Views/AddStoryView.dart';
 import 'package:mysocialmediaapp/Views/MessagesView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
+import 'package:mysocialmediaapp/utilities/StoriesList.dart';
 import 'package:mysocialmediaapp/utilities/StoryItem.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
@@ -126,111 +127,89 @@ class _HomeViewState extends State<HomeView>
                 ),
               ];
             },
-            body: RefreshIndicator(
-              color: Colors.white,
-              onRefresh: refresh,
-              child: Column(children: [
-                FutureBuilder(
-                    future: DataBase().getStories(ownerUser),
-                    builder: (context, snapshot) {
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.done:
-                          {
-                            data = snapshot.data as List<List<Story>>;
+            body: ScaffoldMessenger(
+              child: RefreshIndicator(
+                color: Colors.white,
+                onRefresh: refresh,
+                child: Column(children: [
+                  FutureBuilder(
+                      future: DataBase().getStories(ownerUser),
+                      builder: (context, snapshot) {
+                        switch (snapshot.connectionState) {
+                          case ConnectionState.done:
+                            {
+                              data = snapshot.data as List<List<Story>>;
 
-                            userStories = seperateOwnerUserStories(data);
+                              userStories = seperateOwnerUserStories(data);
 
-                            return Expanded(
-                              child: ListView(children: [
-                                Padding(
-                                    padding:
-                                        EdgeInsets.only(top: 5, bottom: 2.h),
-                                    child: SizedBox(
-                                        height: 13.5.h,
-                                        child: ListView.builder(
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: data.length + 1,
-                                            itemBuilder: (context, index) {
-                                              if (index == 0) {
-                                                return ValueListenableBuilder(
-                                                    valueListenable:
-                                                        StoryCollection(),
-                                                    builder: (context, value,
-                                                        child) {
-                                                      return StoryItem(
-                                                        stories: userStories,
-                                                        user: ownerUser,
-                                                        allStoriesList: null,
-                                                      );
-                                                    });
-                                              }
-                                              var followingStories =
-                                                  data[index - 1];
-                                              return StoryItem(
-                                                stories: followingStories,
-                                                user: ownerUser,
-                                                allStoriesList: data,
-                                              );
-                                            }))),
-                                FirestorePagination(
-                                    isLive: true,
-                                    shrinkWrap: true,
-                                    viewType: ViewType.list,
-                                    onEmpty: const Text('No Posts Available'),
-                                    initialLoader: const SizedBox.shrink(),
-                                    bottomLoader: const Center(
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                    limit: 12,
-                                    query: ownerUser.following.isNotEmpty
-                                        ? FirebaseFirestore.instance
-                                            .collection('posts')
-                                            .where('userId',
-                                                whereIn: ownerUser.following)
-                                            .orderBy('uploadDateTime',
-                                                descending: true)
-                                        : FirebaseFirestore.instance
-                                            .collection('posts')
-                                            .orderBy('uploadDateTime',
-                                                descending: true)
-                                            .where(FieldPath.documentId,
-                                                whereIn:
-                                                    ownerUser.publicPosts!),
-                                    itemBuilder: (context, snapshot, index) {
-                                      var post = getObject(snapshot);
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 6, right: 6),
-                                        child: HomeScreenItems(
-                                          post: post,
-                                          ownerUser: ownerUser,
-                                          screenHeight: screenHeight,
-                                          screenWwidth: screenWidth,
-                                          seeMore: seeMore,
-                                          index: index,
-                                          rebuilt: refresh,
-                                          stories: data,
+                              return Expanded(
+                                child: ListView(children: [
+                                  Padding(
+                                      padding:
+                                          EdgeInsets.only(top: 5, bottom: 2.h),
+                                      child: StoriesRow(
+                                          data: data,
+                                          userStories: userStories,
+                                          ownerUser: ownerUser)),
+                                  FirestorePagination(
+                                      isLive: true,
+                                      shrinkWrap: true,
+                                      viewType: ViewType.list,
+                                      onEmpty: const Text('No Posts Available'),
+                                      initialLoader: const SizedBox.shrink(),
+                                      bottomLoader: const Center(
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
                                         ),
-                                      );
-                                    })
-                              ]),
-                            );
-                          }
+                                      ),
+                                      limit: 12,
+                                      query: ownerUser.following.isNotEmpty
+                                          ? FirebaseFirestore.instance
+                                              .collection('posts')
+                                              .where('userId',
+                                                  whereIn: ownerUser.following)
+                                              .orderBy('uploadDateTime',
+                                                  descending: true)
+                                          : FirebaseFirestore.instance
+                                              .collection('posts')
+                                              .orderBy('uploadDateTime',
+                                                  descending: true)
+                                              .where(FieldPath.documentId,
+                                                  whereIn:
+                                                      ownerUser.publicPosts!),
+                                      itemBuilder: (context, snapshot, index) {
+                                        var post = getObject(snapshot);
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 6, right: 6),
+                                          child: HomeScreenItems(
+                                            post: post,
+                                            ownerUser: ownerUser,
+                                            screenHeight: screenHeight,
+                                            screenWwidth: screenWidth,
+                                            seeMore: seeMore,
+                                            index: index,
+                                            rebuilt: refresh,
+                                            stories: data,
+                                          ),
+                                        );
+                                      })
+                                ]),
+                              );
+                            }
 
-                        default:
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          );
-                      }
-                    }),
-              ]),
+                          default:
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            );
+                        }
+                      }),
+                ]),
+              ),
             ),
           ),
         ),
