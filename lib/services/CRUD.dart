@@ -10,6 +10,12 @@ class DataBase {
   CollectionReference userCollection =
       FirebaseFirestore.instance.collection('users');
 
+  CollectionReference messageCollection =
+      FirebaseFirestore.instance.collection('messeges');
+
+  CollectionReference chatCollection =
+      FirebaseFirestore.instance.collection('chats');
+
   CollectionReference storyCollection =
       FirebaseFirestore.instance.collection('stories');
 
@@ -678,6 +684,177 @@ class DataBase {
     }
     return false;
   }
+
+  Future<Chats?> getChat(String senderId, String receiverId) async {
+    try {
+      var docs = await chatCollection
+          .where(Filter.or(Filter('user1UserId', isEqualTo: senderId),
+              Filter('user1UserId', isEqualTo: receiverId)))
+          .where(Filter.or(Filter('user2UserId', isEqualTo: senderId),
+              Filter('user2UserId', isEqualTo: receiverId)))
+          .limit(1)
+          .get();
+      if (docs.docs.isEmpty) {
+        return null;
+      } else {
+        var doc = docs.docs.first;
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        var chatId = doc.id;
+        var user1UserId = data['user1UserId'];
+        var user1UserName = data['user1UserName'];
+        var user1Name = data['user1Name'];
+        var user1ProfileLoc = data['user1ProfileLoc'];
+
+        var user2UserId = data['user2UserId'];
+        var user2UserName = data['user2UserName'];
+        var user2Name = data['user2Name'];
+        var user2ProfileLoc = data['user2ProfileLoc'];
+
+        var user1Seen = data['user1Seen'];
+        var user2Seen = data['user2Seen'];
+
+        Chats chat = Chats(
+            chatId: chatId,
+            user1UserId: user1UserId,
+            user1UserName: user1UserName,
+            user1Name: user1Name,
+            user1ProfileLoc: user1ProfileLoc,
+            user2UserId: user2UserId,
+            user2UserName: user2UserName,
+            user2Name: user2Name,
+            user2ProfileLoc: user2ProfileLoc,
+            user1Seen: user1Seen,
+            user2Seen: user2Seen);
+        print(chat.chatId);
+        return chat;
+      }
+    } catch (e) {
+      print(e);
+//
+      return null;
+    }
+  }
+
+  Future<void> createAChat(Chats chat) async {
+    try {
+      var doc = await chatCollection.add({
+        'user1UserId': chat.user1UserId,
+        'user1UserName': chat.user1UserName,
+        'user1Name': chat.user1Name,
+        'user1ProfileLoc': chat.user1ProfileLoc,
+        'user2UserId': chat.user2UserId,
+        'user2UserName': chat.user2UserName,
+        'user2Name': chat.user2Name,
+        'user2ProfileLoc': chat.user2ProfileLoc,
+        'user1Seen': chat.user1Seen,
+        'user2Seen': chat.user2Seen,
+      });
+
+      chat.chatId = doc.id;
+    } catch (e) {
+      //
+    }
+  }
+
+  Future<bool> insertMessage(Chats chat, String message) async {
+    Timestamp now = Timestamp.fromDate(DateTime.now());
+    try {
+      await messageCollection.add({
+        'chatId': chat.chatId,
+        'senderUserId': chat.user1UserId,
+        'receiverId': chat.user2UserId,
+        'message': message,
+        'time': now,
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> toggleSeen(Chats chat, int personalUserNumber) async {
+    try {
+      var doc = chatCollection.doc(chat.chatId);
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        if (personalUserNumber == 1) {
+          transaction.update(doc, {
+            'user1Seen': true,
+            'user2Seen': false,
+          });
+        } else {
+          transaction.update(doc, {
+            'user1Seen': false,
+            'user2Seen': true,
+          });
+        }
+      });
+    } catch (e) {
+      //
+    }
+  }
+
+  Future<bool> sendMessage(
+      Chats chat, int personalUserNumber, String message) async {
+    try {
+      if (chat.chatId == null) {
+        //create chat document if it doesn't exists
+        await createAChat(chat);
+      }
+
+      var result = await insertMessage(chat, message);
+      if (!result) {
+        return false;
+      }
+      await toggleSeen(chat, personalUserNumber);
+
+      return true;
+    } catch (e) {
+      //
+      return false;
+    }
+  }
+}
+
+class Messages {
+  late String chatId;
+  late String senderUserId;
+  late String receicerUserId;
+  late String content;
+  late DateTime time;
+
+  Messages(
+      {required this.chatId,
+      required this.senderUserId,
+      required this.receicerUserId,
+      required this.content,
+      required this.time});
+}
+
+class Chats {
+  late String? chatId;
+  late String user1UserId;
+  late String user1UserName;
+  late String user1Name;
+  late String? user1ProfileLoc;
+  late String user2UserId;
+  late String user2UserName;
+  late String user2Name;
+  late String? user2ProfileLoc;
+  late bool user1Seen;
+  late bool user2Seen;
+
+  Chats(
+      {this.chatId,
+      required this.user1UserId,
+      required this.user1UserName,
+      required this.user1Name,
+      required this.user1ProfileLoc,
+      required this.user2UserId,
+      required this.user2UserName,
+      required this.user2Name,
+      required this.user2ProfileLoc,
+      required this.user1Seen,
+      required this.user2Seen});
 }
 
 class Users {

@@ -94,7 +94,9 @@ class _SearchBarViewState extends State<SearchBarView> {
                                                 rebuilt: null,
                                               )),
                                     );
-                                  } else {}
+                                  } else {
+                                    Navigator.pop(context, users[index]);
+                                  }
                                 },
                                 child: SizedBox(
                                   height: 70,
