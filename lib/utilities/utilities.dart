@@ -85,3 +85,40 @@ Story makeStoryObject(DocumentSnapshot snapshot) {
 
   return story;
 }
+
+Chats getChatObject(DocumentSnapshot snapshot) {
+  Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+  var chatId = snapshot.id;
+  var user1UserId = data['user1UserId'];
+  var user1UserName = data['user1UserName'];
+  var user1Name = data['user1Name'];
+  var user1ProfileLoc = data['user1ProfileLoc'];
+
+  var user2UserId = data['user2UserId'];
+  var user2UserName = data['user2UserName'];
+  var user2Name = data['user2Name'];
+  var user2ProfileLoc = data['user2ProfileLoc'];
+
+  var user1Seen = data['user1Seen'];
+  var user2Seen = data['user2Seen'];
+
+  Timestamp date = data['time'];
+
+  var dartDate = date.toDate();
+
+  Chats chat = Chats(
+      chatId: chatId,
+      user1UserId: user1UserId,
+      user1UserName: user1UserName,
+      user1Name: user1Name,
+      user1ProfileLoc: user1ProfileLoc,
+      user2UserId: user2UserId,
+      user2UserName: user2UserName,
+      user2Name: user2Name,
+      user2ProfileLoc: user2ProfileLoc,
+      user1Seen: user1Seen,
+      user2Seen: user2Seen,
+      date: dartDate);
+
+  return chat;
+}

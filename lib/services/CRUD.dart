@@ -117,26 +117,43 @@ class DataBase {
 
   Future<void> updateProfileInDatabase(Users user, url) async {
     try {
+      //update location in user
       DocumentReference ref = userCollection.doc(user.userId);
       await ref.update({'profileLocation': url});
-
+      //update Location in stories
       Timestamp now = Timestamp.fromDate(DateTime.now());
       QuerySnapshot storySnapShot = await storyCollection
           .where('userId', isEqualTo: user.userId)
           .where('finishDateTime', isGreaterThan: now)
           .get();
+
       for (QueryDocumentSnapshot documentSnapshot in storySnapShot.docs) {
         DocumentReference documentRef =
             storyCollection.doc(documentSnapshot.id);
         await documentRef.update({'profileLoc': url});
       }
-
+      //update location in posts
       QuerySnapshot querySnapshot =
           await postCollection.where('userId', isEqualTo: user.userId).get();
 
       for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
         DocumentReference documentRef = postCollection.doc(documentSnapshot.id);
         await documentRef.update({'profileLoc': url});
+      }
+      //update location in chats
+      QuerySnapshot docs = await chatCollection
+          .where(Filter.or(Filter('user1UserId', isEqualTo: user.userId),
+              Filter('user2UserId', isEqualTo: user.userId)))
+          .get();
+
+      for (QueryDocumentSnapshot documentSnapshot in docs.docs) {
+        DocumentReference documentRef = chatCollection.doc(documentSnapshot.id);
+        var chat = getChatObject(documentSnapshot);
+        if (chat.user1UserId == user.userId) {
+          await documentRef.update({'user1ProfileLoc': url});
+        } else {
+          await documentRef.update({'user2ProfileLoc': url});
+        }
       }
 
       //state management
@@ -713,6 +730,10 @@ class DataBase {
         var user1Seen = data['user1Seen'];
         var user2Seen = data['user2Seen'];
 
+        Timestamp date = data['time'];
+
+        var dartDate = date.toDate();
+
         Chats chat = Chats(
             chatId: chatId,
             user1UserId: user1UserId,
@@ -724,8 +745,9 @@ class DataBase {
             user2Name: user2Name,
             user2ProfileLoc: user2ProfileLoc,
             user1Seen: user1Seen,
-            user2Seen: user2Seen);
-        print(chat.chatId);
+            user2Seen: user2Seen,
+            date: dartDate);
+
         return chat;
       }
     } catch (e) {
@@ -736,6 +758,7 @@ class DataBase {
   }
 
   Future<void> createAChat(Chats chat) async {
+    Timestamp now = Timestamp.fromDate(DateTime.now());
     try {
       var doc = await chatCollection.add({
         'user1UserId': chat.user1UserId,
@@ -748,6 +771,7 @@ class DataBase {
         'user2ProfileLoc': chat.user2ProfileLoc,
         'user1Seen': chat.user1Seen,
         'user2Seen': chat.user2Seen,
+        'time': now
       });
 
       chat.chatId = doc.id;
@@ -781,11 +805,15 @@ class DataBase {
             'user1Seen': true,
             'user2Seen': false,
           });
+          chat.user1Seen = true;
+          chat.user2Seen = false;
         } else {
           transaction.update(doc, {
             'user1Seen': false,
             'user2Seen': true,
           });
+          chat.user1Seen = false;
+          chat.user2Seen = true;
         }
       });
     } catch (e) {
@@ -804,11 +832,15 @@ class DataBase {
       var result = await insertMessage(chat, message);
       if (!result) {
         return false;
-      }
-      await toggleSeen(chat, personalUserNumber);
+      } else {
+        if (chat.user1Seen == false || chat.user2Seen == true) {
+          await toggleSeen(chat, personalUserNumber);
+        }
 
-      return true;
+        return true;
+      }
     } catch (e) {
+      print(e);
       //
       return false;
     }
@@ -842,6 +874,7 @@ class Chats {
   late String? user2ProfileLoc;
   late bool user1Seen;
   late bool user2Seen;
+  late DateTime date;
 
   Chats(
       {this.chatId,
@@ -854,7 +887,8 @@ class Chats {
       required this.user2Name,
       required this.user2ProfileLoc,
       required this.user1Seen,
-      required this.user2Seen});
+      required this.user2Seen,
+      required this.date});
 }
 
 class Users {

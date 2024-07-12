@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:sizer/sizer.dart';
 
 class SearchBarView extends StatefulWidget {
   final bool messaging;
@@ -35,7 +36,7 @@ class _SearchBarViewState extends State<SearchBarView> {
               padding: const EdgeInsets.only(right: 15),
               child: Container(
                 width: MediaQuery.of(context).size.width - 70,
-                height: 38,
+                height: 4.5.h,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.grey.shade900),
@@ -53,12 +54,12 @@ class _SearchBarViewState extends State<SearchBarView> {
                   enableSuggestions: false,
                   autocorrect: false,
                   controller: text,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: 'Search',
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: 10.0, horizontal: 10.0),
-                      prefixIcon: Icon(Icons.search)),
+                      contentPadding: EdgeInsets.symmetric(vertical: 1.2.h),
+                      prefixIcon: const Icon(Icons.search)),
+                  textAlign: TextAlign.left,
                 ),
               ),
             ),

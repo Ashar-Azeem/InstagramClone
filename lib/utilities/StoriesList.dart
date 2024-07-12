@@ -37,7 +37,7 @@ class _StoriesRowState extends State<StoriesRow> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-        height: 13.5.h,
+        height: 14.h,
         child: ListView.builder(
             shrinkWrap: true,
             scrollDirection: Axis.horizontal,

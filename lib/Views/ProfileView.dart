@@ -83,12 +83,16 @@ class _ProfileViewState extends State<ProfileView>
                       (_) => false,
                     );
                   } else if (result == 'isprivate') {
+                    setState(() {
+                      loading = true;
+                    });
                     changePrivacy(user, db, PostsCollection().value).then(
                       (value) async {
                         if (value == "success") {
                           setState(() {
                             user.isPrivate = !isPrivate;
                             isPrivate = !isPrivate;
+                            loading = false;
                           });
                         }
                       },

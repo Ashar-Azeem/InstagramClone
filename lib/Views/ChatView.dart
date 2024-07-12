@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
@@ -17,6 +20,7 @@ class ChatView extends StatefulWidget {
 }
 
 class _ChatViewState extends State<ChatView> {
+  List<Messages> messages = [];
   int maxLines = 1;
   bool loading = false;
   late Chats chat;
@@ -118,6 +122,7 @@ class _ChatViewState extends State<ChatView> {
         children: [
           Expanded(
               child: ListView(
+            reverse: true,
             children: [
               Padding(
                   padding: EdgeInsets.only(left: 4.w, right: 4.w),
@@ -128,25 +133,142 @@ class _ChatViewState extends State<ChatView> {
                       : FirestorePagination(
                           isLive: true,
                           shrinkWrap: true,
+                          reverse: true,
                           viewType: ViewType.list,
-                          onEmpty: const Text('No Posts Available'),
-                          initialLoader: const SizedBox.shrink(),
+                          onEmpty: const Text('No Messages'),
+                          initialLoader: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeCap: StrokeCap.round,
+                              strokeWidth: 2,
+                            ),
+                          ),
                           bottomLoader: const Center(
                             child: CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2,
                             ),
                           ),
-                          limit: 12,
+                          limit: 15,
                           query: FirebaseFirestore.instance
                               .collection('messeges')
                               .where('chatId', isEqualTo: chat.chatId)
-                              .orderBy('time', descending: false),
+                              .orderBy('time', descending: true),
                           itemBuilder: (context, snapshot, index) {
-                            var message = getMyObject(snapshot);
-                            return Row(
-                              children: [Text(message.content)],
-                            );
+                            var currentMessage = getMyObject(snapshot);
+
+                            return currentMessage.senderUserId ==
+                                    chat.user2UserId
+                                ? Padding(
+                                    padding: EdgeInsets.only(bottom: 1.h),
+                                    child: SizedBox(
+                                      width: 90.w,
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    EdgeInsets.only(right: 3.w),
+                                                child: CircleAvatar(
+                                                  backgroundColor: Colors.grey,
+                                                  backgroundImage: chat
+                                                              .user2ProfileLoc ==
+                                                          null
+                                                      ? const AssetImage(
+                                                              'assets/blankprofile.png')
+                                                          as ImageProvider
+                                                      : NetworkImage(
+                                                          chat.user2ProfileLoc!,
+                                                        ),
+                                                  radius: 13,
+                                                ),
+                                              ),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                                decoration: BoxDecoration(
+                                                  color: const Color.fromARGB(
+                                                      255, 55, 55, 57),
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                    topLeft: Radius.circular(
+                                                        max(
+                                                            60.1 -
+                                                                currentMessage
+                                                                    .content
+                                                                    .length,
+                                                            10)),
+                                                    topRight: Radius.circular(
+                                                        max(
+                                                            60.1 -
+                                                                currentMessage
+                                                                    .content
+                                                                    .length,
+                                                            10)),
+                                                    bottomRight:
+                                                        Radius.circular(max(
+                                                            60.1 -
+                                                                currentMessage
+                                                                    .content
+                                                                    .length,
+                                                            10)),
+                                                    bottomLeft: Radius.zero,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                    currentMessage.content,
+                                                    softWrap: true,
+                                                    style: const TextStyle(
+                                                        fontSize: 16)),
+                                              ),
+                                            ]),
+                                      ),
+                                    ),
+                                  )
+                                : Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 30.w, bottom: 1.h),
+                                    child: SizedBox(
+                                      width: 90.w,
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromARGB(
+                                                255, 124, 32, 181),
+                                            borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(max(
+                                                  60.1 -
+                                                      currentMessage
+                                                          .content.length,
+                                                  10)),
+                                              topRight: Radius.circular(max(
+                                                  60.1 -
+                                                      currentMessage
+                                                          .content.length,
+                                                  10)),
+                                              bottomLeft: Radius.circular(max(
+                                                  60.1 -
+                                                      currentMessage
+                                                          .content.length,
+                                                  10)),
+                                              bottomRight: Radius.zero,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            currentMessage.content,
+                                            softWrap: true,
+                                            style:
+                                                const TextStyle(fontSize: 16),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
                           },
                         ))
             ],
@@ -154,7 +276,7 @@ class _ChatViewState extends State<ChatView> {
           Align(
               alignment: AlignmentDirectional.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(top: 14, bottom: 10),
                 child: Container(
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10.w),
@@ -240,8 +362,9 @@ class _ChatViewState extends State<ChatView> {
                           },
                           child: loading
                               ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
+                                  color: blueColor,
+                                  strokeWidth: 1,
+                                  strokeCap: StrokeCap.round,
                                 )
                               : const Text(
                                   'Send',
