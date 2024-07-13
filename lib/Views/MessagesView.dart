@@ -237,7 +237,7 @@ class _MessagesViewState extends State<MessagesView> {
                                           padding: EdgeInsets.only(left: 15.w),
                                           child: !chat.user1Seen
                                               ? const Icon(
-                                                  Icons.donut_large_rounded,
+                                                  Icons.circle,
                                                   color: blueColor,
                                                   size: 15,
                                                 )
@@ -246,7 +246,7 @@ class _MessagesViewState extends State<MessagesView> {
                                           padding: EdgeInsets.only(left: 15.w),
                                           child: !chat.user2Seen
                                               ? const Icon(
-                                                  Icons.donut_large_rounded,
+                                                  Icons.circle,
                                                   color: blueColor,
                                                   size: 15,
                                                 )

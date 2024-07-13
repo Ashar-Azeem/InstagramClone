@@ -796,6 +796,28 @@ class DataBase {
     }
   }
 
+  Future<void> updateSeen(Chats chat, int personalUserNumber) async {
+    try {
+      var doc = chatCollection.doc(chat.chatId);
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        if (personalUserNumber == 1) {
+          transaction.update(doc, {
+            'user1Seen': true,
+          });
+          chat.user1Seen = true;
+        } else {
+          transaction.update(doc, {
+            'user2Seen': true,
+          });
+          chat.user2Seen = true;
+        }
+      });
+    } catch (e) {
+      print(e);
+      //
+    }
+  }
+
   Future<void> toggleSeen(Chats chat, int personalUserNumber) async {
     try {
       var doc = chatCollection.doc(chat.chatId);

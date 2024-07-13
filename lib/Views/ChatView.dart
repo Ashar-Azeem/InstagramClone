@@ -1,13 +1,14 @@
-import 'dart:math';
+// ignore_for_file: file_names
 
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:mysocialmediaapp/utilities/utilities.dart';
 import 'package:sizer/sizer.dart';
 
 class ChatView extends StatefulWidget {
@@ -20,11 +21,14 @@ class ChatView extends StatefulWidget {
 }
 
 class _ChatViewState extends State<ChatView> {
-  List<Messages> messages = [];
+  Messages? currentMessage;
+  Messages? previousMessage;
   int maxLines = 1;
   bool loading = false;
   late Chats chat;
   int userNumber = 1;
+  DataBase db = DataBase();
+
   TextEditingController controller = TextEditingController();
   @override
   void initState() {
@@ -63,6 +67,10 @@ class _ChatViewState extends State<ChatView> {
         maxLines = lines;
       });
     }
+  }
+
+  void performUpdate() async {
+    await db.updateSeen(chat, userNumber);
   }
 
   @override
@@ -124,6 +132,43 @@ class _ChatViewState extends State<ChatView> {
               child: ListView(
             reverse: true,
             children: [
+              StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('chats')
+                    .doc(chat.chatId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    var chat = getChatObject(snapshot.data!);
+                    if (chat.user1UserId ==
+                        FirebaseAuth.instance.currentUser!.uid) {
+                      if (chat.user2Seen) {
+                        return Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 5.w),
+                              child: const Text('Seen'),
+                            ));
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    } else {
+                      if (chat.user1Seen) {
+                        return Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 5.w),
+                              child: const Text('Seen'),
+                            ));
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+              ),
               Padding(
                   padding: EdgeInsets.only(left: 4.w, right: 4.w),
                   child: chat.chatId == null
@@ -155,38 +200,49 @@ class _ChatViewState extends State<ChatView> {
                               .where('chatId', isEqualTo: chat.chatId)
                               .orderBy('time', descending: true),
                           itemBuilder: (context, snapshot, index) {
-                            var currentMessage = getMyObject(snapshot);
-
-                            return currentMessage.senderUserId ==
-                                    chat.user2UserId
-                                ? Padding(
+                            previousMessage = currentMessage;
+                            currentMessage = getMyObject(snapshot);
+                            if (index == 0) {
+                              previousMessage = null;
+                              if (currentMessage!.senderUserId !=
+                                  FirebaseAuth.instance.currentUser!.uid) {
+                                performUpdate();
+                              }
+                            }
+                            if (currentMessage!.senderUserId ==
+                                chat.user2UserId) {
+                              return Column(
+                                children: [
+                                  Padding(
                                     padding: EdgeInsets.only(bottom: 1.h),
                                     child: SizedBox(
                                       width: 90.w,
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    EdgeInsets.only(right: 3.w),
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.grey,
-                                                  backgroundImage: chat
-                                                              .user2ProfileLoc ==
-                                                          null
-                                                      ? const AssetImage(
-                                                              'assets/blankprofile.png')
-                                                          as ImageProvider
-                                                      : NetworkImage(
-                                                          chat.user2ProfileLoc!,
-                                                        ),
-                                                  radius: 13,
-                                                ),
+                                      child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(right: 3.w),
+                                              child: CircleAvatar(
+                                                backgroundColor: Colors.grey,
+                                                backgroundImage: chat
+                                                            .user2ProfileLoc ==
+                                                        null
+                                                    ? const AssetImage(
+                                                            'assets/blankprofile.png')
+                                                        as ImageProvider
+                                                    : NetworkImage(
+                                                        chat.user2ProfileLoc!,
+                                                      ),
+                                                radius: 13,
                                               ),
-                                              Container(
+                                            ),
+                                            Flexible(
+                                              fit: FlexFit.loose,
+                                              child: Container(
                                                 padding:
                                                     const EdgeInsets.all(8),
                                                 decoration: BoxDecoration(
@@ -197,21 +253,21 @@ class _ChatViewState extends State<ChatView> {
                                                     topLeft: Radius.circular(
                                                         max(
                                                             60.1 -
-                                                                currentMessage
+                                                                currentMessage!
                                                                     .content
                                                                     .length,
                                                             10)),
                                                     topRight: Radius.circular(
                                                         max(
                                                             60.1 -
-                                                                currentMessage
+                                                                currentMessage!
                                                                     .content
                                                                     .length,
                                                             10)),
                                                     bottomRight:
                                                         Radius.circular(max(
                                                             60.1 -
-                                                                currentMessage
+                                                                currentMessage!
                                                                     .content
                                                                     .length,
                                                             10)),
@@ -219,16 +275,40 @@ class _ChatViewState extends State<ChatView> {
                                                   ),
                                                 ),
                                                 child: Text(
-                                                    currentMessage.content,
+                                                    currentMessage!.content,
                                                     softWrap: true,
                                                     style: const TextStyle(
                                                         fontSize: 16)),
                                               ),
-                                            ]),
-                                      ),
+                                            ),
+                                          ]),
                                     ),
-                                  )
-                                : Padding(
+                                  ),
+                                  previousMessage != null &&
+                                          !isSameDay(previousMessage!.time,
+                                              currentMessage!.time)
+                                      ? Padding(
+                                          padding: EdgeInsets.only(
+                                              top: 2.h, bottom: 2.h),
+                                          child: Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              previousMessage!.time
+                                                  .toString()
+                                                  .substring(0, 10),
+                                              style: const TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 188, 188, 191)),
+                                            ),
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ],
+                              );
+                            } else {
+                              return Column(
+                                children: [
+                                  Padding(
                                     padding: EdgeInsets.only(
                                         left: 30.w, bottom: 1.h),
                                     child: SizedBox(
@@ -243,24 +323,24 @@ class _ChatViewState extends State<ChatView> {
                                             borderRadius: BorderRadius.only(
                                               topLeft: Radius.circular(max(
                                                   60.1 -
-                                                      currentMessage
+                                                      currentMessage!
                                                           .content.length,
                                                   10)),
                                               topRight: Radius.circular(max(
                                                   60.1 -
-                                                      currentMessage
+                                                      currentMessage!
                                                           .content.length,
                                                   10)),
                                               bottomLeft: Radius.circular(max(
                                                   60.1 -
-                                                      currentMessage
+                                                      currentMessage!
                                                           .content.length,
                                                   10)),
                                               bottomRight: Radius.zero,
                                             ),
                                           ),
                                           child: Text(
-                                            currentMessage.content,
+                                            currentMessage!.content,
                                             softWrap: true,
                                             style:
                                                 const TextStyle(fontSize: 16),
@@ -268,9 +348,30 @@ class _ChatViewState extends State<ChatView> {
                                         ),
                                       ),
                                     ),
-                                  );
+                                  ),
+                                  previousMessage != null &&
+                                          !isSameDay(previousMessage!.time,
+                                              currentMessage!.time)
+                                      ? Padding(
+                                          padding: EdgeInsets.only(
+                                              top: 2.h, bottom: 2.h),
+                                          child: Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                                previousMessage!.time
+                                                    .toString()
+                                                    .substring(0, 10),
+                                                style: const TextStyle(
+                                                    color: Color.fromARGB(
+                                                        255, 188, 188, 191))),
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ],
+                              );
+                            }
                           },
-                        ))
+                        )),
             ],
           )),
           Align(
@@ -400,4 +501,10 @@ Messages getMyObject(DocumentSnapshot snapshot) {
       receicerUserId: receicerUserId,
       content: content,
       time: timeDart);
+}
+
+bool isSameDay(DateTime date1, DateTime date2) {
+  return date1.year == date2.year &&
+      date1.month == date2.month &&
+      date1.day == date2.day;
 }
