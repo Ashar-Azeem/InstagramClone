@@ -1,8 +1,10 @@
+// ignore_for_file: file_names
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
 import 'package:mysocialmediaapp/Views/ChatView.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
@@ -89,10 +91,12 @@ class _MessagesViewState extends State<MessagesView> {
                                     user1UserId: ownerUser.userId,
                                     user1UserName: ownerUser.userName,
                                     user1Name: ownerUser.name,
+                                    user1FCMToken: ownerUser.token,
                                     user1ProfileLoc: ownerUser.imageLoc,
                                     user2UserId: result.userId,
                                     user2UserName: result.userName,
                                     user2Name: result.name,
+                                    user2FCMToken: result.token,
                                     user2ProfileLoc: result.imageLoc,
                                     user1Seen: true,
                                     user2Seen: false,

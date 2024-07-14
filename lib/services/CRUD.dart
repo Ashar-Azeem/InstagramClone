@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mysocialmediaapp/services/SendingNotification.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 
 class DataBase {
@@ -155,6 +156,19 @@ class DataBase {
           await documentRef.update({'user2ProfileLoc': url});
         }
       }
+
+      //update location in comments:
+      QuerySnapshot comments = await commentsCollection
+          .where('userId', isEqualTo: user.userId)
+          .get();
+
+      for (QueryDocumentSnapshot documentSnapshot in comments.docs) {
+        DocumentReference documentRef =
+            commentsCollection.doc(documentSnapshot.id);
+        await documentRef.update({'profileLoc': url});
+      }
+
+      //update location in chats:
 
       //state management
       //Below code is to ensure that UI is changes upon updation profile picture
@@ -721,7 +735,8 @@ class DataBase {
         var user1UserName = data['user1UserName'];
         var user1Name = data['user1Name'];
         var user1ProfileLoc = data['user1ProfileLoc'];
-
+        var user1FCMToken = data['user1FCMtoken'];
+        var user2FCMToken = data['user2FCMtoken'];
         var user2UserId = data['user2UserId'];
         var user2UserName = data['user2UserName'];
         var user2Name = data['user2Name'];
@@ -739,9 +754,11 @@ class DataBase {
             user1UserId: user1UserId,
             user1UserName: user1UserName,
             user1Name: user1Name,
+            user1FCMToken: user1FCMToken,
             user1ProfileLoc: user1ProfileLoc,
             user2UserId: user2UserId,
             user2UserName: user2UserName,
+            user2FCMToken: user2FCMToken,
             user2Name: user2Name,
             user2ProfileLoc: user2ProfileLoc,
             user1Seen: user1Seen,
@@ -764,10 +781,12 @@ class DataBase {
         'user1UserId': chat.user1UserId,
         'user1UserName': chat.user1UserName,
         'user1Name': chat.user1Name,
+        'user1FCMtoken': chat.user1FCMToken,
         'user1ProfileLoc': chat.user1ProfileLoc,
         'user2UserId': chat.user2UserId,
         'user2UserName': chat.user2UserName,
         'user2Name': chat.user2Name,
+        'user2FCMtoken': chat.user2FCMToken,
         'user2ProfileLoc': chat.user2ProfileLoc,
         'user1Seen': chat.user1Seen,
         'user2Seen': chat.user2Seen,
@@ -855,9 +874,7 @@ class DataBase {
       if (!result) {
         return false;
       } else {
-        if (chat.user1Seen == false || chat.user2Seen == true) {
-          await toggleSeen(chat, personalUserNumber);
-        }
+        await toggleSeen(chat, personalUserNumber);
 
         return true;
       }
@@ -889,10 +906,12 @@ class Chats {
   late String user1UserId;
   late String user1UserName;
   late String user1Name;
+  late String user1FCMToken;
   late String? user1ProfileLoc;
   late String user2UserId;
   late String user2UserName;
   late String user2Name;
+  late String user2FCMToken;
   late String? user2ProfileLoc;
   late bool user1Seen;
   late bool user2Seen;
@@ -903,10 +922,12 @@ class Chats {
       required this.user1UserId,
       required this.user1UserName,
       required this.user1Name,
+      required this.user1FCMToken,
       required this.user1ProfileLoc,
       required this.user2UserId,
       required this.user2UserName,
       required this.user2Name,
+      required this.user2FCMToken,
       required this.user2ProfileLoc,
       required this.user1Seen,
       required this.user2Seen,

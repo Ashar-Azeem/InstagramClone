@@ -6,6 +6,7 @@ import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
+import 'package:mysocialmediaapp/utilities/utilities.dart';
 import 'package:sizer/sizer.dart';
 
 class HomeScreenItems extends StatefulWidget {
@@ -223,6 +224,7 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                 });
                 if (!isLiked) {
                   await DataBase().addLike(post, ownerUser);
+                  sendLikeNotification(ownerUser, post);
                   isLiked = true;
                 }
               },
@@ -253,6 +255,7 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                                 post.totalLikes += 1;
                               });
                               await DataBase().addLike(post, ownerUser);
+                              sendLikeNotification(ownerUser, post);
                             }
                           },
                           icon: post.likesList.contains(ownerUser.userId)

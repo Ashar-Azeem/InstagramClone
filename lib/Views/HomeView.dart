@@ -162,7 +162,7 @@ class _HomeViewState extends State<HomeView> {
                                           ]);
                                     }
                                   } else {
-                                    if (chat.user2Seen) {
+                                    if (!chat.user2Seen) {
                                       return Stack(
                                           alignment: Alignment.centerRight,
                                           children: [

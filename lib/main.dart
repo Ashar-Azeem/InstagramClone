@@ -16,7 +16,7 @@ void main() {
   runApp(
     Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        title: 'Social media app',
+        title: 'My Instagram',
         theme: ThemeData.dark()
             .copyWith(scaffoldBackgroundColor: mobileBackgroundColor),
         home: const Main(),

@@ -132,43 +132,45 @@ class _ChatViewState extends State<ChatView> {
               child: ListView(
             reverse: true,
             children: [
-              StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('chats')
-                    .doc(chat.chatId)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    var chat = getChatObject(snapshot.data!);
-                    if (chat.user1UserId ==
-                        FirebaseAuth.instance.currentUser!.uid) {
-                      if (chat.user2Seen) {
-                        return Align(
-                            alignment: Alignment.bottomRight,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 5.w),
-                              child: const Text('Seen'),
-                            ));
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    } else {
-                      if (chat.user1Seen) {
-                        return Align(
-                            alignment: Alignment.bottomRight,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 5.w),
-                              child: const Text('Seen'),
-                            ));
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    }
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                },
-              ),
+              chat.chatId != null
+                  ? StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('chats')
+                          .doc(chat.chatId)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          var chat = getChatObject(snapshot.data!);
+                          if (chat.user1UserId ==
+                              FirebaseAuth.instance.currentUser!.uid) {
+                            if (chat.user2Seen) {
+                              return Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 5.w),
+                                    child: const Text('Seen'),
+                                  ));
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          } else {
+                            if (chat.user1Seen) {
+                              return Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 5.w),
+                                    child: const Text('Seen'),
+                                  ));
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          }
+                        } else {
+                          return const SizedBox.shrink();
+                        }
+                      },
+                    )
+                  : const SizedBox.shrink(),
               Padding(
                   padding: EdgeInsets.only(left: 4.w, right: 4.w),
                   child: chat.chatId == null
@@ -437,13 +439,12 @@ class _ChatViewState extends State<ChatView> {
                               setState(() {
                                 loading = true;
                               });
-
+                              var text = controller.text;
+                              controller.text = '';
                               DataBase()
-                                  .sendMessage(
-                                      chat, userNumber, controller.text)
+                                  .sendMessage(chat, userNumber, text)
                                   .then((value) {
                                 if (value) {
-                                  controller.text = '';
                                 } else {
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(const SnackBar(
@@ -459,6 +460,7 @@ class _ChatViewState extends State<ChatView> {
                                   loading = false;
                                 });
                               });
+                              await notification(chat, text);
                             }
                           },
                           child: loading

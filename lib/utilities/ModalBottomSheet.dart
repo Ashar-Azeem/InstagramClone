@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
+import 'package:mysocialmediaapp/utilities/utilities.dart';
 import 'package:sizer/sizer.dart';
 
 class CustomBottomSheet extends StatefulWidget {
@@ -246,6 +247,8 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
                                       post.totalComments += 1;
                                     });
                                   });
+                                  await sendCommentNotification(
+                                      ownerUser, post, text);
                                 }
                               },
                               icon: loading

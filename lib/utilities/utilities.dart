@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
+import 'package:mysocialmediaapp/services/SendingNotification.dart';
 import 'package:uuid/uuid.dart';
 
 imagepicker(ImageSource source) async {
@@ -93,7 +94,8 @@ Chats getChatObject(DocumentSnapshot snapshot) {
   var user1UserName = data['user1UserName'];
   var user1Name = data['user1Name'];
   var user1ProfileLoc = data['user1ProfileLoc'];
-
+  var user1FCMToken = data['user1FCMtoken'];
+  var user2FCMToken = data['user2FCMtoken'];
   var user2UserId = data['user2UserId'];
   var user2UserName = data['user2UserName'];
   var user2Name = data['user2Name'];
@@ -110,6 +112,8 @@ Chats getChatObject(DocumentSnapshot snapshot) {
       chatId: chatId,
       user1UserId: user1UserId,
       user1UserName: user1UserName,
+      user1FCMToken: user1FCMToken,
+      user2FCMToken: user2FCMToken,
       user1Name: user1Name,
       user1ProfileLoc: user1ProfileLoc,
       user2UserId: user2UserId,
@@ -121,4 +125,30 @@ Chats getChatObject(DocumentSnapshot snapshot) {
       date: dartDate);
 
   return chat;
+}
+
+Future<void> notification(Chats chat, String message) async {
+  if (chat.user1UserId == FirebaseAuth.instance.currentUser!.uid) {
+    await sendNotification(
+        chat.user2FCMToken, chat.user1UserName, message, null);
+  } else {
+    await sendNotification(
+        chat.user1FCMToken, chat.user2UserName, message, null);
+  }
+}
+
+Future<void> sendLikeNotification(Users ownerUser, Posts post) async {
+  Users otherUser = await DataBase().getUser(post.userId, false) as Users;
+  String data = "${ownerUser.userName} liked your picture";
+  await sendNotification(otherUser.token, 'Notification', data, null);
+}
+
+Future<void> sendCommentNotification(
+    Users ownerUser, Posts post, String comment) async {
+  if (ownerUser.userId == post.userId) {
+    return;
+  }
+  Users otherUser = await DataBase().getUser(post.userId, false) as Users;
+  String data = "${ownerUser.userName} commented on your picture";
+  await sendNotification(otherUser.token, data, comment, null);
 }

@@ -8,6 +8,7 @@ import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
+import 'package:mysocialmediaapp/utilities/utilities.dart';
 
 class ViewPost extends StatefulWidget {
   final Users user;
@@ -328,6 +329,9 @@ class _ViewPostState extends State<ViewPost> {
                                 if (!isLiked) {
                                   await DataBase().addLike(posts[index], user);
                                   isLiked = true;
+                                  if (posts[index].userId != user.userId) {
+                                    sendLikeNotification(user, posts[index]);
+                                  }
                                   if (widget.rebuilt != null) {
                                     await widget.rebuilt!();
                                   }
@@ -369,6 +373,11 @@ class _ViewPostState extends State<ViewPost> {
                                               });
                                               await DataBase()
                                                   .addLike(posts[index], user);
+                                              if (posts[index].userId !=
+                                                  user.userId) {
+                                                sendLikeNotification(
+                                                    user, posts[index]);
+                                              }
                                             }
                                             if (widget.rebuilt != null) {
                                               await widget.rebuilt!();

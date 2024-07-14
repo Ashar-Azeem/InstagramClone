@@ -1,8 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="mysocialmediaapp"
+        android:label="My Instagram"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+                 android:resource="@drawable/notification_logo" />
+
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color"
+         android:resource="@color/colorAccent" />        
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,5 +36,7 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        
     </application>
 </manifest>

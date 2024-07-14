@@ -101,93 +101,98 @@ class _SearchViewState extends State<SearchView>
             SliverPadding(
               padding: const EdgeInsets.only(left: 5, right: 5),
               sliver: SliverToBoxAdapter(
-                child: FirestorePagination(
-                  key: ValueKey(rebuilt),
-                  isLive: true,
-                  shrinkWrap: true,
-                  viewType: ViewType.grid,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 2,
-                      mainAxisSpacing: 2,
-                      childAspectRatio: 0.945),
-                  onEmpty: const Text(
-                      'No Exploring data is available at the moment'),
-                  initialLoader: const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  bottomLoader: const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  limit: 18,
-                  query: FirebaseFirestore.instance
-                      .collection('posts')
-                      .orderBy('uploadDateTime', descending: true)
-                      .where(FieldPath.documentId, whereIn: user.publicPosts!),
-                  itemBuilder: (context, snapshot, index) {
-                    var post = getObject(snapshot);
-                    check(post);
-                    // if (user.following.contains(post.userId)) {
-                    //   return SizedBox.shrink();
-                    // }
-                    return InkWell(
-                        onTap: () async {
-                          Posts post = documents[index];
-                          List<Posts> sublist = documents
-                              .where((element) => element.userId == post.userId)
-                              .toList();
+                child: user.publicPosts == null
+                    ? const Text("No Posts yet")
+                    : FirestorePagination(
+                        key: ValueKey(rebuilt),
+                        isLive: true,
+                        shrinkWrap: true,
+                        viewType: ViewType.grid,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 2,
+                                mainAxisSpacing: 2,
+                                childAspectRatio: 0.945),
+                        onEmpty: const Text(
+                            'No Exploring data is available at the moment'),
+                        initialLoader: const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                        bottomLoader: const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                        limit: 18,
+                        query: FirebaseFirestore.instance
+                            .collection('posts')
+                            .orderBy('uploadDateTime', descending: true)
+                            .where(FieldPath.documentId,
+                                whereIn: user.publicPosts!),
+                        itemBuilder: (context, snapshot, index) {
+                          var post = getObject(snapshot);
+                          check(post);
+                          // if (user.following.contains(post.userId)) {
+                          //   return SizedBox.shrink();
+                          // }
+                          return InkWell(
+                              onTap: () async {
+                                Posts post = documents[index];
+                                List<Posts> sublist = documents
+                                    .where((element) =>
+                                        element.userId == post.userId)
+                                    .toList();
 
-                          var range = 12;
-                          var length = sublist.length;
-                          if (length < range) {
-                            for (var i = 0; i < range - length; i++) {
-                              var l = documents
-                                  .where(
-                                      (element) => !sublist.contains(element))
-                                  .toList();
-                              var element = Random().nextInt(l.length);
-                              sublist.add(l[element]);
-                            }
-                          }
-                          sublist.removeWhere(
-                              (element) => element.postId == post.postId);
-                          sublist.shuffle();
-                          sublist.insert(0, post);
+                                var range = 12;
+                                var length = sublist.length;
+                                if (length < range) {
+                                  for (var i = 0; i < range - length; i++) {
+                                    var l = documents
+                                        .where((element) =>
+                                            !sublist.contains(element))
+                                        .toList();
+                                    var element = Random().nextInt(l.length);
+                                    sublist.add(l[element]);
+                                  }
+                                }
+                                sublist.removeWhere(
+                                    (element) => element.postId == post.postId);
+                                sublist.shuffle();
+                                sublist.insert(0, post);
 
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ViewPost(
-                                  posts: sublist,
-                                  index1: 0,
-                                  personal: false,
-                                  user: user,
-                                  rebuilt: refresh,
-                                ),
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ViewPost(
+                                        posts: sublist,
+                                        index1: 0,
+                                        personal: false,
+                                        user: user,
+                                        rebuilt: refresh,
+                                      ),
+                                    ));
+                              },
+                              child: Material(
+                                type: MaterialType.transparency,
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                  color: const Color.fromARGB(255, 38, 38, 38),
+                                  borderRadius: BorderRadius.circular(0),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      post.postLoc,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                )),
                               ));
                         },
-                        child: Material(
-                          type: MaterialType.transparency,
-                          child: Container(
-                              decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 38, 38, 38),
-                            borderRadius: BorderRadius.circular(0),
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                post.postLoc,
-                              ),
-                              fit: BoxFit.cover,
-                            ),
-                          )),
-                        ));
-                  },
-                ),
+                      ),
               ),
             )
           ]),
