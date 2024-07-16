@@ -138,8 +138,25 @@ Future<void> notification(Chats chat, String message) async {
 }
 
 Future<void> sendLikeNotification(Users ownerUser, Posts post) async {
+  if (ownerUser.userId == post.userId) {
+    return;
+  }
   Users otherUser = await DataBase().getUser(post.userId, false) as Users;
   String data = "${ownerUser.userName} liked your picture";
+  Notifications notification = Notifications(
+      receiverId: post.userId,
+      isLikeNotification: true,
+      isCommentNotification: false,
+      isFollowerNotification: false,
+      isRequestNotification: false,
+      senderId: ownerUser.userId,
+      senderProfileLoc: ownerUser.imageLoc,
+      senderUserName: ownerUser.userName,
+      time: DateTime.now(),
+      postId: post.postId,
+      postLoc: post.postLoc,
+      comment: null);
+  await DataBase().insertNotification(notification);
   await sendNotification(otherUser.token, 'Notification', data, null);
 }
 
@@ -150,5 +167,19 @@ Future<void> sendCommentNotification(
   }
   Users otherUser = await DataBase().getUser(post.userId, false) as Users;
   String data = "${ownerUser.userName} commented on your picture";
+  Notifications notification = Notifications(
+      receiverId: post.userId,
+      isLikeNotification: false,
+      isCommentNotification: true,
+      isFollowerNotification: false,
+      isRequestNotification: false,
+      senderId: ownerUser.userId,
+      senderProfileLoc: ownerUser.imageLoc,
+      senderUserName: ownerUser.userName,
+      time: DateTime.now(),
+      postId: post.postId,
+      postLoc: post.postLoc,
+      comment: comment);
+  await DataBase().insertNotification(notification);
   await sendNotification(otherUser.token, data, comment, null);
 }

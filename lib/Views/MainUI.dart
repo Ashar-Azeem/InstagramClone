@@ -38,7 +38,7 @@ class _MainUIState extends State<MainUI> {
       HomeView(user: user),
       SearchView(user: user),
       AddPostView(user: user),
-      const NotificationView(),
+      NotificationView(user: user),
       ProfileView(user: user)
     ];
   }

@@ -36,6 +36,7 @@ class _ViewPostState extends State<ViewPost> {
   late List<Posts> posts;
   late int index1;
   late double size;
+  late List<int> count;
   late ScrollController _controller;
   late bool personalCheck;
   @override
@@ -44,9 +45,11 @@ class _ViewPostState extends State<ViewPost> {
     user = widget.user;
     posts = widget.posts;
     seeMore = List.filled(posts.length, false);
+    count = List.filled(posts.length, 0);
     personalCheck = widget.personal;
     index1 = widget.index1;
     _controller = ScrollController();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_controller.hasClients) {
         _controller.jumpTo(
@@ -327,11 +330,15 @@ class _ViewPostState extends State<ViewPost> {
                                   }
                                 });
                                 if (!isLiked) {
-                                  await DataBase().addLike(posts[index], user);
-                                  isLiked = true;
-                                  if (posts[index].userId != user.userId) {
-                                    sendLikeNotification(user, posts[index]);
+                                  count[index]++;
+
+                                  if (count[index] <= 3) {
+                                    DataBase().addLike(posts[index], user);
+                                    if (count[index] <= 1) {
+                                      sendLikeNotification(user, posts[index]);
+                                    }
                                   }
+                                  isLiked = true;
                                   if (widget.rebuilt != null) {
                                     await widget.rebuilt!();
                                   }
@@ -350,6 +357,7 @@ class _ViewPostState extends State<ViewPost> {
                                     children: [
                                       IconButton(
                                           onPressed: () async {
+                                            count[index]++;
                                             if (posts[index]
                                                 .likesList
                                                 .contains(user.userId)) {
@@ -360,8 +368,17 @@ class _ViewPostState extends State<ViewPost> {
                                                     .remove(user.userId);
                                                 posts[index].totalLikes -= 1;
                                               });
-                                              await DataBase().removeLike(
-                                                  posts[index], user);
+                                              if (count[index] <= 3) {
+                                                DataBase().removeLike(
+                                                    posts[index], user);
+                                                DataBase().deleteNotification(
+                                                    posts[index],
+                                                    user,
+                                                    null,
+                                                    true,
+                                                    false,
+                                                    false);
+                                              }
                                             } else {
                                               setState(() {
                                                 isHeartAnimating = true;
@@ -371,12 +388,14 @@ class _ViewPostState extends State<ViewPost> {
                                                     .add(user.userId);
                                                 posts[index].totalLikes += 1;
                                               });
-                                              await DataBase()
-                                                  .addLike(posts[index], user);
-                                              if (posts[index].userId !=
-                                                  user.userId) {
-                                                sendLikeNotification(
-                                                    user, posts[index]);
+                                              if (count[index] <= 3) {
+                                                DataBase().addLike(
+                                                    posts[index], user);
+
+                                                if (count[index] <= 1) {
+                                                  sendLikeNotification(
+                                                      user, posts[index]);
+                                                }
                                               }
                                             }
                                             if (widget.rebuilt != null) {

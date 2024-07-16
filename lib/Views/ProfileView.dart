@@ -468,6 +468,7 @@ class _ProfileViewState extends State<ProfileView> {
                                                       index1: index,
                                                       personal: true,
                                                       user: user,
+                                                      rebuilt: null,
                                                     ),
                                                   ));
                                             },

@@ -41,6 +41,7 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
   late double screenHeight;
   late List<bool> seeMore;
   late int index;
+  int count = 0;
   bool isHeartAnimating = false;
   late List<List<Story>> stories;
   @override
@@ -223,8 +224,13 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                   }
                 });
                 if (!isLiked) {
-                  await DataBase().addLike(post, ownerUser);
-                  sendLikeNotification(ownerUser, post);
+                  count++;
+                  if (count <= 3) {
+                    DataBase().addLike(post, ownerUser);
+                    if (count <= 1) {
+                      sendLikeNotification(ownerUser, post);
+                    }
+                  }
                   isLiked = true;
                 }
               },
@@ -240,13 +246,18 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                     children: [
                       IconButton(
                           onPressed: () async {
+                            count++;
                             if (post.likesList.contains(ownerUser.userId)) {
                               setState(() {
                                 isLiked = false;
                                 post.likesList.remove(ownerUser.userId);
                                 post.totalLikes -= 1;
                               });
-                              await DataBase().removeLike(post, ownerUser);
+                              if (count <= 3) {
+                                DataBase().removeLike(post, ownerUser);
+                                DataBase().deleteNotification(
+                                    post, ownerUser, null, true, false, false);
+                              }
                             } else {
                               setState(() {
                                 isHeartAnimating = true;
@@ -254,8 +265,12 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                                 post.likesList.add(ownerUser.userId);
                                 post.totalLikes += 1;
                               });
-                              await DataBase().addLike(post, ownerUser);
-                              sendLikeNotification(ownerUser, post);
+                              if (count <= 3) {
+                                DataBase().addLike(post, ownerUser);
+                                if (count <= 1) {
+                                  sendLikeNotification(ownerUser, post);
+                                }
+                              }
                             }
                           },
                           icon: post.likesList.contains(ownerUser.userId)

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/services/AuthExceptions.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/FireBaseMessaging.dart';
+import 'package:mysocialmediaapp/services/SendingNotification.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/ErrorDialogue.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
@@ -52,6 +53,7 @@ Future<String> loginUser(
     await AuthService().login(email: email, password: password);
     String token = await Messaging().getFCMToken();
     await DataBase().updateToken(FirebaseAuth.instance.currentUser!.uid, token);
+
     return 'success';
   } on UserNotFoundAuthException {
     await showErrorDialog(context, 'User not found');
@@ -106,6 +108,22 @@ Future<String> changePrivacy(Users user, DataBase db, List<Posts> posts) async {
 Future<bool> addRelationship(Users user, Users ownerUser, DataBase db) async {
   try {
     await db.addFollowerAndFollowing(user, ownerUser);
+    Notifications notification = Notifications(
+        receiverId: user.userId,
+        isLikeNotification: false,
+        isCommentNotification: false,
+        isFollowerNotification: true,
+        isRequestNotification: false,
+        senderId: ownerUser.userId,
+        senderProfileLoc: ownerUser.imageLoc,
+        senderUserName: ownerUser.userName,
+        time: DateTime.now(),
+        postId: null,
+        postLoc: null,
+        comment: null);
+    await db.insertNotification(notification);
+    await sendNotification(user.token, 'Following',
+        "${ownerUser.userName} started following you", null);
 
     return true;
   } catch (e) {
@@ -118,6 +136,7 @@ Future<bool> removeRelationship(
     Users user, Users ownerUser, DataBase db) async {
   try {
     await db.removeFollowerAndFollowing(user, ownerUser);
+    await db.deleteNotification(null, ownerUser, user, false, true, false);
 
     return true;
   } catch (e) {
@@ -128,6 +147,23 @@ Future<bool> removeRelationship(
 
 Future<bool> removeFollower(Users user, Users ownerUser, DataBase db) async {
   var result = await db.removeFollower(user, ownerUser);
+  return result;
+}
+
+Future<bool> confirmingARequest(
+    Users userWhoWillGainFollower, Users userWhoWillGainAFriend) async {
+  var result = await DataBase()
+      .gainFollower(userWhoWillGainFollower, userWhoWillGainAFriend);
+
+  await DataBase().deleteNotification(null, userWhoWillGainAFriend,
+      userWhoWillGainFollower, false, false, true);
+
+  await sendNotification(
+      userWhoWillGainAFriend.token,
+      'Request Accepted',
+      "${userWhoWillGainFollower.userName} has accepted your following request",
+      null);
+
   return result;
 }
 

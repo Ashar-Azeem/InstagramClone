@@ -10,6 +10,9 @@ class DataBase {
   CollectionReference userCollection =
       FirebaseFirestore.instance.collection('users');
 
+  CollectionReference notificationCollection =
+      FirebaseFirestore.instance.collection('notifications');
+
   CollectionReference messageCollection =
       FirebaseFirestore.instance.collection('messeges');
 
@@ -108,6 +111,13 @@ class DataBase {
       await postCollection.doc(postId).delete();
       await FirebaseStorage.instance.refFromURL(loc).delete();
 
+      QuerySnapshot notifications =
+          await notificationCollection.where('postId', isEqualTo: postId).get();
+
+      for (QueryDocumentSnapshot documentSnapshot in notifications.docs) {
+        await notificationCollection.doc(documentSnapshot.id).delete();
+      }
+
       return true;
     } catch (e) {
       //
@@ -165,6 +175,17 @@ class DataBase {
         DocumentReference documentRef =
             commentsCollection.doc(documentSnapshot.id);
         await documentRef.update({'profileLoc': url});
+      }
+
+      //update location in notifications
+      QuerySnapshot notifications = await notificationCollection
+          .where('senderId', isEqualTo: user.userId)
+          .get();
+
+      for (QueryDocumentSnapshot documentSnapshot in notifications.docs) {
+        DocumentReference documentRef =
+            notificationCollection.doc(documentSnapshot.id);
+        await documentRef.update({'senderProfileLoc': url});
       }
 
       //update location in chats:
@@ -400,6 +421,36 @@ class DataBase {
         });
 
         Followers().updateFollowers(ownerFollowers);
+      });
+
+      return true;
+    } catch (_) {
+      //
+    }
+    return false;
+  }
+
+  Future<bool> gainFollower(Users followerGainer, Users fanUser) async {
+    try {
+      List<String> gain = followerGainer.followers;
+      List<String> fan = fanUser.following;
+
+      gain.add(fanUser.userId);
+      fan.add(followerGainer.userId);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentReference gainRef = userCollection.doc(followerGainer.userId);
+        DocumentReference fanRef = userCollection.doc(fanUser.userId);
+
+        transaction.update(gainRef, {
+          'followers': FieldValue.arrayUnion([fanUser.userId])
+        });
+
+        transaction.update(fanRef, {
+          'following': FieldValue.arrayUnion([followerGainer.userId])
+        });
+
+        Followers().updateFollowers(gain);
       });
 
       return true;
@@ -649,11 +700,27 @@ class DataBase {
   }
 
   //Update the FCM token
-  Future<void> updateToken(String userId, String FCMtoken) async {
+  Future<void> updateToken(String userId, String fcmtoken) async {
     try {
       DocumentReference result = userCollection.doc(userId);
 
-      await result.update({'token': FCMtoken});
+      await result.update({'token': fcmtoken});
+
+      //update location in chats
+      QuerySnapshot docs = await chatCollection
+          .where(Filter.or(Filter('user1UserId', isEqualTo: userId),
+              Filter('user2UserId', isEqualTo: userId)))
+          .get();
+
+      for (QueryDocumentSnapshot documentSnapshot in docs.docs) {
+        DocumentReference documentRef = chatCollection.doc(documentSnapshot.id);
+        var chat = getChatObject(documentSnapshot);
+        if (chat.user1UserId == userId) {
+          await documentRef.update({'user1FCMtoken': fcmtoken});
+        } else {
+          await documentRef.update({'user2FCMtoken': fcmtoken});
+        }
+      }
     } catch (e) {
       //
     }
@@ -883,6 +950,117 @@ class DataBase {
       return false;
     }
   }
+
+  Future<void> deleteNotification(Posts? post, Users senderUser,
+      Users? receiverUser, bool isLike, bool isFollow, bool isRequest) async {
+    if (post != null) {
+      if (isLike) {
+        var doc = await notificationCollection
+            .where('senderId', isEqualTo: senderUser.userId)
+            .where('postId', isEqualTo: post.postId)
+            .where('isLikeNotification', isEqualTo: true)
+            .limit(1)
+            .get();
+        if (doc.docs.isNotEmpty) {
+          var ref = doc.docs.first;
+          notificationCollection.doc(ref.id).delete();
+        }
+      }
+    } else if (receiverUser != null) {
+      if (isFollow) {
+        var doc = await notificationCollection
+            .where('senderId', isEqualTo: senderUser.userId)
+            .where('receiverId', isEqualTo: receiverUser.userId)
+            .where('isFollowerNotification', isEqualTo: true)
+            .limit(1)
+            .get();
+        if (doc.docs.isNotEmpty) {
+          var ref = doc.docs.first;
+          notificationCollection.doc(ref.id).delete();
+        }
+      } else if (isRequest) {
+        var doc = await notificationCollection
+            .where('senderId', isEqualTo: senderUser.userId)
+            .where('receiverId', isEqualTo: receiverUser.userId)
+            .where('isRequestNotification', isEqualTo: true)
+            .limit(1)
+            .get();
+        if (doc.docs.isNotEmpty) {
+          var ref = doc.docs.first;
+          notificationCollection.doc(ref.id).delete();
+        }
+      }
+    }
+  }
+
+  Future<void> insertNotification(Notifications notification) async {
+    try {
+      notificationCollection.add({
+        'receiverId': notification.receiverId,
+        'isLikeNotification': notification.isLikeNotification,
+        'isCommentNotification': notification.isCommentNotification,
+        'isFollowerNotification': notification.isFollowerNotification,
+        'isRequestNotification': notification.isRequestNotification,
+        'senderId': notification.senderId,
+        'senderUserName': notification.senderUserName,
+        'senderProfileLoc': notification.senderProfileLoc,
+        'time': Timestamp.fromDate(notification.time),
+        'postId': notification.postId,
+        'postLoc': notification.postLoc,
+        'comment': notification.comment
+      });
+    } catch (e) {
+      //
+    }
+  }
+
+  Future<bool> isRequested(Users ownerUser, Users visitingUser) async {
+    try {
+      QuerySnapshot docs = await notificationCollection
+          .where('senderId', isEqualTo: ownerUser.userId)
+          .where('receiverId', isEqualTo: visitingUser.userId)
+          .where('isRequestNotification', isEqualTo: true)
+          .get();
+
+      if (docs.docs.isNotEmpty) {
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      //
+      return false;
+    }
+  }
+}
+
+class Notifications {
+  late String receiverId;
+  late bool isLikeNotification;
+  late bool isCommentNotification;
+  late bool isFollowerNotification;
+  late bool isRequestNotification;
+  late String senderId;
+  late String senderUserName;
+  late String? senderProfileLoc;
+  late DateTime time;
+  late String? postId;
+  late String? postLoc;
+  late String? comment;
+
+  Notifications(
+      {required this.receiverId,
+      required this.isLikeNotification,
+      required this.isCommentNotification,
+      required this.isFollowerNotification,
+      required this.isRequestNotification,
+      required this.senderId,
+      required this.senderProfileLoc,
+      required this.senderUserName,
+      required this.time,
+      required this.postId,
+      required this.postLoc,
+      required this.comment});
 }
 
 class Messages {
