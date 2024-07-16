@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mysocialmediaapp/Views/LoginView.dart';
@@ -44,7 +45,11 @@ class Main extends StatelessWidget {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               {
-                return const LoginView();
+                if (FirebaseAuth.instance.currentUser == null) {
+                  return const LoginView();
+                } else {
+                  return const MainUI();
+                }
               }
             default:
               {
