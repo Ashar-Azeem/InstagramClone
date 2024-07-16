@@ -9,6 +9,7 @@ import 'package:mysocialmediaapp/Views/LoginView.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
+import 'package:mysocialmediaapp/utilities/DeveloperMesssage.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 import 'package:sizer/sizer.dart';
@@ -393,7 +394,9 @@ class _ProfileViewState extends State<ProfileView> {
                                           ),
                                         )),
                                     InkWell(
-                                        onTap: () {},
+                                        onTap: () {
+                                          showMessage(context, "I Am Batman");
+                                        },
                                         child: Container(
                                           height: 30,
                                           width: 175,

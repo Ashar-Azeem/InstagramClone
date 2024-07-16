@@ -31,6 +31,7 @@ class _HomeViewState extends State<HomeView> {
   List<Posts> documents = [];
   List<Story> userStories = [];
   List<List<Story>> data = [];
+
   @override
   void initState() {
     super.initState();

@@ -476,7 +476,6 @@ class DataBase {
 
       return true;
     } catch (e) {
-      print(e);
       return false;
     }
   }
@@ -575,9 +574,7 @@ class DataBase {
         }
       }
       return posts;
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
     return null;
   }
 
@@ -618,9 +615,7 @@ class DataBase {
       }
 
       return stories;
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
     return stories;
   }
 
@@ -666,9 +661,7 @@ class DataBase {
 
         return user;
       }
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
     return null;
   }
 
@@ -751,9 +744,7 @@ class DataBase {
       Story story = Story(content, finishDateTime, user.imageLoc, id.id,
           storyImageLoc, currentDateTime, userId, user.userName, views);
       return story;
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
     return null;
   }
 
@@ -784,19 +775,25 @@ class DataBase {
 
   Future<Chats?> getChat(String senderId, String receiverId) async {
     try {
-      var docs = await chatCollection
-          .where(Filter.or(Filter('user1UserId', isEqualTo: senderId),
-              Filter('user1UserId', isEqualTo: receiverId)))
-          .where(Filter.or(Filter('user2UserId', isEqualTo: senderId),
-              Filter('user2UserId', isEqualTo: receiverId)))
+      var query1 = await chatCollection
+          .where('user1UserId', isEqualTo: senderId)
+          .where('user2UserId', isEqualTo: receiverId)
           .limit(1)
           .get();
-      if (docs.docs.isEmpty) {
+      print(query1.docs.length);
+      // Query 2: user2UserId matches senderId or receiverId
+      var query2 = await chatCollection
+          .where('user2UserId', isEqualTo: senderId)
+          .where('user1UserId', isEqualTo: receiverId)
+          .limit(1)
+          .get();
+      print(query2.docs.length);
+      List<QueryDocumentSnapshot> docs = query1.docs + query2.docs;
+      if (docs.isEmpty) {
         return null;
       } else {
-        var doc = docs.docs.first;
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        var chatId = doc.id;
+        Map<String, dynamic> data = docs[0].data() as Map<String, dynamic>;
+        var chatId = docs[0].id;
         var user1UserId = data['user1UserId'];
         var user1UserName = data['user1UserName'];
         var user1Name = data['user1Name'];

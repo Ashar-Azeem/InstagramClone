@@ -88,12 +88,12 @@ class _NotificationViewState extends State<NotificationView> {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.grey,
-                              backgroundImage:
-                                  notification.senderProfileLoc == null
-                                      ? const AssetImage('assets/blankprofile')
-                                          as ImageProvider
-                                      : NetworkImage(
-                                          notification.senderProfileLoc!),
+                              backgroundImage: notification.senderProfileLoc ==
+                                      null
+                                  ? const AssetImage('assets/blankprofile.png')
+                                      as ImageProvider
+                                  : NetworkImage(
+                                      notification.senderProfileLoc!),
                             ),
                             Padding(
                               padding: EdgeInsets.only(left: 4.w, right: 1.w),
@@ -167,12 +167,12 @@ class _NotificationViewState extends State<NotificationView> {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.grey,
-                              backgroundImage:
-                                  notification.senderProfileLoc == null
-                                      ? const AssetImage('assets/blankprofile')
-                                          as ImageProvider
-                                      : NetworkImage(
-                                          notification.senderProfileLoc!),
+                              backgroundImage: notification.senderProfileLoc ==
+                                      null
+                                  ? const AssetImage('assets/blankprofile.png')
+                                      as ImageProvider
+                                  : NetworkImage(
+                                      notification.senderProfileLoc!),
                             ),
                             Padding(
                               padding: EdgeInsets.only(left: 4.w, right: 2.w),
@@ -256,12 +256,12 @@ class _NotificationViewState extends State<NotificationView> {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.grey,
-                              backgroundImage:
-                                  notification.senderProfileLoc == null
-                                      ? const AssetImage('assets/blankprofile')
-                                          as ImageProvider
-                                      : NetworkImage(
-                                          notification.senderProfileLoc!),
+                              backgroundImage: notification.senderProfileLoc ==
+                                      null
+                                  ? const AssetImage('assets/blankprofile.png')
+                                      as ImageProvider
+                                  : NetworkImage(
+                                      notification.senderProfileLoc!),
                             ),
                             Padding(
                               padding: EdgeInsets.only(left: 4.w, right: 1.w),
@@ -322,12 +322,12 @@ class _NotificationViewState extends State<NotificationView> {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.grey,
-                              backgroundImage:
-                                  notification.senderProfileLoc == null
-                                      ? const AssetImage('assets/blankprofile')
-                                          as ImageProvider
-                                      : NetworkImage(
-                                          notification.senderProfileLoc!),
+                              backgroundImage: notification.senderProfileLoc ==
+                                      null
+                                  ? const AssetImage('assets/blankprofile.png')
+                                      as ImageProvider
+                                  : NetworkImage(
+                                      notification.senderProfileLoc!),
                             ),
                             Padding(
                               padding: EdgeInsets.only(left: 4.w, right: 1.w),

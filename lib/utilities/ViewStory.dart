@@ -126,6 +126,7 @@ class _ViewStoryState extends State<ViewStory>
               currentIndex = index;
               var story = currentUsersStory.elementAt(index);
               StoryCollection().addStory(story: story);
+
               built.set(story: story);
 
               if (!story.views.contains(user.userId)) {

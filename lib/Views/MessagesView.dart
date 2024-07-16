@@ -84,7 +84,7 @@ class _MessagesViewState extends State<MessagesView> {
                               loading = true;
                             });
                             DataBase()
-                                .getChat(ownerUser.userId, result.userId)
+                                .getChat(result.userId, ownerUser.userId)
                                 .then((value) {
                               if (value == null) {
                                 chat = Chats(

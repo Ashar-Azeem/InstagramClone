@@ -328,6 +328,7 @@ class _VisitingProfileViewItemsState extends State<VisitingProfileViewItems> {
                       onTap: () async {
                         Chats? chat =
                             await db.getChat(user.userId, ownerUser.userId);
+
                         if (chat == null) {
                           chat = Chats(
                               user1UserId: ownerUser.userId,

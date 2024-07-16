@@ -148,7 +148,11 @@ class _ViewPostState extends State<ViewPost> {
                                           )
                                         : TextButton(
                                             onPressed: () async {
-                                              Users user = await DataBase()
+                                              if (posts[index].userId ==
+                                                  user.userId) {
+                                                return;
+                                              }
+                                              Users newuser = await DataBase()
                                                   .getUser(posts[index].userId,
                                                       false) as Users;
                                               Navigator.push(
@@ -156,7 +160,7 @@ class _ViewPostState extends State<ViewPost> {
                                                   MaterialPageRoute(
                                                       builder: (context) =>
                                                           VisitingProfileView(
-                                                            user: user,
+                                                            user: newuser,
                                                             ownerUser:
                                                                 widget.user,
                                                             rebuilt:
