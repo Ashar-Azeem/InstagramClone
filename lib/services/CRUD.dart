@@ -125,6 +125,16 @@ class DataBase {
         await commentsCollection.doc(documentSnapshot.id).delete();
       }
 
+      QuerySnapshot messages =
+          await messageCollection.where('postId', isEqualTo: postId).get();
+
+      for (QueryDocumentSnapshot documentSnapshot in messages.docs) {
+        await messageCollection.doc(documentSnapshot.id).update({
+          'imageLoc': null,
+          'postId': null,
+        });
+      }
+
       return true;
     } catch (e) {
       //
