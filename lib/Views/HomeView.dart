@@ -11,7 +11,7 @@ import 'package:mysocialmediaapp/utilities/HomeScreenItems.dart';
 import 'package:mysocialmediaapp/utilities/StoriesList.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:sizer/sizer.dart';
 
 class HomeView extends StatefulWidget {
@@ -52,6 +52,7 @@ class _HomeViewState extends State<HomeView> {
 
   Future<void> refresh() async {
     var user = await db.getUser(ownerUser.userId, true);
+    print('rebuilt');
     setState(() {
       ownerUser = user!;
       data.clear();

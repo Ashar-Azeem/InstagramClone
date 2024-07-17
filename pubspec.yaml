@@ -28,8 +28,6 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  flutter:
-    sdk: flutter
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -46,12 +44,11 @@ dependencies:
   uuid: ^4.3.3
   provider: ^6.1.1
   firebase_messaging: ^14.8.1
-  persistent_bottom_nav_bar: ^5.0.2
+  persistent_bottom_nav_bar: ^6.2.1
   firebase_pagination: ^3.1.0
   sizer: ^2.0.15
   gradient_borders: ^1.0.1
   story_view: ^0.16.5
-  readmore: ^3.0.0
   flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
@@ -63,7 +60,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -6,7 +6,7 @@ import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/SendingNotification.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class VisitingProfileViewItems extends StatefulWidget {
   final bool isRequested;
@@ -266,7 +266,6 @@ class _VisitingProfileViewItemsState extends State<VisitingProfileViewItems> {
                                 null, ownerUser, user, false, false, true)
                             .then((value) {
                           setState(() {
-                            print('heheh');
                             isRequested = false;
                           });
                         });
@@ -349,6 +348,7 @@ class _VisitingProfileViewItemsState extends State<VisitingProfileViewItems> {
                             context,
                             screen: (ChatView(
                               chat: chat,
+                              user: ownerUser,
                             )),
                             withNavBar: false,
                             pageTransitionAnimation:
@@ -359,6 +359,7 @@ class _VisitingProfileViewItemsState extends State<VisitingProfileViewItems> {
                             context,
                             screen: (ChatView(
                               chat: chat,
+                              user: ownerUser,
                             )),
                             withNavBar: false,
                             pageTransitionAnimation:

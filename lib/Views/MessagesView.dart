@@ -10,7 +10,7 @@ import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:sizer/sizer.dart';
 
 class MessagesView extends StatefulWidget {
@@ -112,6 +112,7 @@ class _MessagesViewState extends State<MessagesView> {
                                 context,
                                 screen: (ChatView(
                                   chat: chat!,
+                                  user: ownerUser,
                                 )),
                                 withNavBar: false,
                                 pageTransitionAnimation:
@@ -191,72 +192,78 @@ class _MessagesViewState extends State<MessagesView> {
                               context,
                               screen: (ChatView(
                                 chat: chat,
+                                user: ownerUser,
                               )),
                               withNavBar: false,
                               pageTransitionAnimation:
                                   PageTransitionAnimation.cupertino,
                             );
                           },
-                          child: SizedBox(
-                              width: 92.w,
-                              height: 9.2.h,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white, // Border color
-                                          width: 1.0, // Border width
-                                        )),
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.grey,
-                                      backgroundImage: profileLoc == null
-                                          ? const AssetImage(
-                                                  'assets/blankprofile.png')
-                                              as ImageProvider
-                                          : NetworkImage(profileLoc),
-                                      radius: 7.5.w,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 4.w),
-                                    child: SizedBox(
-                                      width: 45.w,
-                                      child: Text(
-                                        softWrap: false,
-                                        overflow: TextOverflow.ellipsis,
-                                        userName,
-                                        style: const TextStyle(
-                                            fontSize: 16.5,
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.white),
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: 1.h),
+                            child: SizedBox(
+                                width: 92.w,
+                                height: 9.2.h,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white, // Border color
+                                            width: 1.0, // Border width
+                                          )),
+                                      child: CircleAvatar(
+                                        backgroundColor: Colors.grey,
+                                        backgroundImage: profileLoc == null
+                                            ? const AssetImage(
+                                                    'assets/blankprofile.png')
+                                                as ImageProvider
+                                            : NetworkImage(profileLoc),
+                                        radius: 7.5.w,
                                       ),
                                     ),
-                                  ),
-                                  personalNumber == 1
-                                      ? Padding(
-                                          padding: EdgeInsets.only(left: 15.w),
-                                          child: !chat.user1Seen
-                                              ? const Icon(
-                                                  Icons.circle,
-                                                  color: blueColor,
-                                                  size: 15,
-                                                )
-                                              : const SizedBox.shrink())
-                                      : Padding(
-                                          padding: EdgeInsets.only(left: 15.w),
-                                          child: !chat.user2Seen
-                                              ? const Icon(
-                                                  Icons.circle,
-                                                  color: blueColor,
-                                                  size: 15,
-                                                )
-                                              : const SizedBox.shrink())
-                                ],
-                              )),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 4.w),
+                                      child: SizedBox(
+                                        width: 45.w,
+                                        child: Text(
+                                          softWrap: false,
+                                          overflow: TextOverflow.ellipsis,
+                                          userName,
+                                          style: const TextStyle(
+                                              fontSize: 16.5,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    personalNumber == 1
+                                        ? Padding(
+                                            padding:
+                                                EdgeInsets.only(left: 15.w),
+                                            child: !chat.user1Seen
+                                                ? const Icon(
+                                                    Icons.circle,
+                                                    color: blueColor,
+                                                    size: 15,
+                                                  )
+                                                : const SizedBox.shrink())
+                                        : Padding(
+                                            padding:
+                                                EdgeInsets.only(left: 15.w),
+                                            child: !chat.user2Seen
+                                                ? const Icon(
+                                                    Icons.circle,
+                                                    color: blueColor,
+                                                    size: 15,
+                                                  )
+                                                : const SizedBox.shrink())
+                                  ],
+                                )),
+                          ),
                         );
                       },
                     ))

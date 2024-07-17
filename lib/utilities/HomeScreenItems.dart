@@ -5,6 +5,7 @@ import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
+import 'package:mysocialmediaapp/utilities/shareModalSheet.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 import 'package:sizer/sizer.dart';
@@ -308,7 +309,21 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                             size: 30,
                           )),
                       IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            showModalBottomSheet(
+                              useSafeArea: false,
+                              showDragHandle: true,
+                              isScrollControlled: true,
+                              useRootNavigator: true,
+                              backgroundColor:
+                                  const Color.fromARGB(255, 34, 38, 41),
+                              context: context,
+                              builder: (context) {
+                                return ShareBottomSheet(
+                                    ownerUser: ownerUser, post: post);
+                              },
+                            );
+                          },
                           icon: const Icon(
                             Icons.send,
                             color: Colors.white,

@@ -7,7 +7,7 @@ import 'package:mysocialmediaapp/Views/ProfileView.dart';
 import 'package:mysocialmediaapp/Views/SearchView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class MainUI extends StatefulWidget {
   const MainUI({super.key});
@@ -64,7 +64,7 @@ class _MainUIState extends State<MainUI> {
                       screens: navigation,
                       controller: pageController,
                       navBarStyle: NavBarStyle.style6,
-                      hideNavigationBarWhenKeyboardShows: true,
+                      hideNavigationBarWhenKeyboardAppears: true,
                       decoration: const NavBarDecoration(
                           border: Border(
                               top: BorderSide(width: 1, color: Colors.grey))),
@@ -92,15 +92,22 @@ class _MainUIState extends State<MainUI> {
                           ),
                         ),
                         PersistentBottomNavBarItem(
-                            icon: const Icon(
-                          Icons.favorite_border,
-                          color: Colors.white,
-                          size: 30,
-                        )),
-                        customNavigationBarItem(
-                            icon: Icons.abc,
-                            label: "",
-                            avatarImage: imageLocation)
+                          icon: const Icon(Icons.favorite),
+                          activeColorPrimary: Colors.white,
+                          activeColorSecondary: Colors.red,
+                          iconSize: 30,
+                        ),
+                        PersistentBottomNavBarItem(
+                            icon: CircleAvatar(
+                              backgroundColor: Colors.grey,
+                              backgroundImage: imageLocation == null
+                                  ? const AssetImage('assets/blankprofile.png')
+                                      as ImageProvider
+                                  : NetworkImage(
+                                      imageLocation,
+                                    ),
+                            ),
+                            iconSize: 30)
                       ]);
                 });
 
@@ -127,8 +134,8 @@ class _MainUIState extends State<MainUI> {
     return avatarImage != null
         ? PersistentBottomNavBarItem(
             icon: Container(
-              width: 35.0,
-              height: 35.0,
+              width: 36.0,
+              height: 36.0,
               decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -145,7 +152,7 @@ class _MainUIState extends State<MainUI> {
         : PersistentBottomNavBarItem(
             icon: const CircleAvatar(
               backgroundImage: AssetImage('assets/blankprofile.png'),
-              radius: 15,
+              radius: 14,
             ),
           );
   }

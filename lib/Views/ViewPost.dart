@@ -7,6 +7,7 @@ import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
+import 'package:mysocialmediaapp/utilities/shareModalSheet.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 
@@ -446,7 +447,23 @@ class _ViewPostState extends State<ViewPost> {
                                             size: 30,
                                           )),
                                       IconButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            showModalBottomSheet(
+                                              useSafeArea: false,
+                                              showDragHandle: true,
+                                              isScrollControlled: true,
+                                              useRootNavigator: true,
+                                              backgroundColor:
+                                                  const Color.fromARGB(
+                                                      255, 34, 38, 41),
+                                              context: context,
+                                              builder: (context) {
+                                                return ShareBottomSheet(
+                                                    ownerUser: user,
+                                                    post: posts[index]);
+                                              },
+                                            );
+                                          },
                                           icon: const Icon(
                                             Icons.send,
                                             color: Colors.white,

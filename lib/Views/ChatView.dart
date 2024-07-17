@@ -5,23 +5,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
+import 'package:mysocialmediaapp/Views/ViewPost.dart';
 
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:sizer/sizer.dart';
 
 class ChatView extends StatefulWidget {
   final Chats chat;
+  final Users user;
 
-  const ChatView({super.key, required this.chat});
+  const ChatView({super.key, required this.chat, required this.user});
 
   @override
   State<ChatView> createState() => _ChatViewState();
 }
 
 class _ChatViewState extends State<ChatView> {
+  List<Messages> messeges = [];
   Messages? currentMessage;
+  late Users ownerUser;
   Messages? previousMessage;
   int maxLines = 1;
   bool loading = false;
@@ -34,7 +39,7 @@ class _ChatViewState extends State<ChatView> {
   void initState() {
     super.initState();
     chat = widget.chat;
-
+    ownerUser = widget.user;
     if (chat.user1UserId != FirebaseAuth.instance.currentUser!.uid) {
       userNumber = 2;
       var temp = chat.user1Name;
@@ -204,6 +209,7 @@ class _ChatViewState extends State<ChatView> {
                           itemBuilder: (context, snapshot, index) {
                             previousMessage = currentMessage;
                             currentMessage = getMyObject(snapshot);
+                            messeges.insert(index, currentMessage!);
                             if (index == 0) {
                               previousMessage = null;
                               if (currentMessage!.senderUserId !=
@@ -242,47 +248,134 @@ class _ChatViewState extends State<ChatView> {
                                                 radius: 13,
                                               ),
                                             ),
-                                            Flexible(
-                                              fit: FlexFit.loose,
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
-                                                  color: const Color.fromARGB(
-                                                      255, 55, 55, 57),
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                    topLeft: Radius.circular(
-                                                        max(
-                                                            60.1 -
-                                                                currentMessage!
-                                                                    .content
-                                                                    .length,
-                                                            10)),
-                                                    topRight: Radius.circular(
-                                                        max(
-                                                            60.1 -
-                                                                currentMessage!
-                                                                    .content
-                                                                    .length,
-                                                            10)),
-                                                    bottomRight:
-                                                        Radius.circular(max(
-                                                            60.1 -
-                                                                currentMessage!
-                                                                    .content
-                                                                    .length,
-                                                            10)),
-                                                    bottomLeft: Radius.zero,
+                                            currentMessage!.content == null
+                                                ? InkWell(
+                                                    onTap: () async {
+                                                      Posts post = await db
+                                                              .getPost(messeges[
+                                                                      index]
+                                                                  .postId!)
+                                                          as Posts;
+
+                                                      List<Posts> posts = [
+                                                        post
+                                                      ];
+                                                      PersistentNavBarNavigator
+                                                          .pushNewScreen(
+                                                              context,
+                                                              screen: (ViewPost(
+                                                                  posts: posts,
+                                                                  index1: 0,
+                                                                  personal:
+                                                                      false,
+                                                                  user:
+                                                                      ownerUser)),
+                                                              withNavBar: true,
+                                                              pageTransitionAnimation:
+                                                                  PageTransitionAnimation
+                                                                      .cupertino);
+                                                    },
+                                                    child: Container(
+                                                      height: 89.w,
+                                                      width: 63.w,
+                                                      decoration: BoxDecoration(
+                                                        color: const Color
+                                                            .fromARGB(
+                                                            255, 36, 34, 40),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                top: 2.w),
+                                                        child: Column(
+                                                          children: [
+                                                            Container(
+                                                                width: 60.w,
+                                                                height: 80.w,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: const Color
+                                                                      .fromARGB(
+                                                                      255,
+                                                                      38,
+                                                                      38,
+                                                                      38),
+                                                                  image:
+                                                                      DecorationImage(
+                                                                    image: NetworkImage(
+                                                                        currentMessage!
+                                                                            .imageLoc!),
+                                                                    fit: BoxFit
+                                                                        .cover,
+                                                                  ),
+                                                                )),
+                                                            const Text(
+                                                              'View Post',
+                                                              style: TextStyle(
+                                                                  fontSize: 16,
+                                                                  color: Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          195,
+                                                                          233,
+                                                                          249),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w200),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
+                                                : Flexible(
+                                                    fit: FlexFit.loose,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color
+                                                            .fromARGB(
+                                                            255, 55, 55, 57),
+                                                        borderRadius:
+                                                            BorderRadius.only(
+                                                          topLeft: Radius.circular(max(
+                                                              60.1 -
+                                                                  currentMessage!
+                                                                      .content!
+                                                                      .length,
+                                                              10)),
+                                                          topRight: Radius.circular(max(
+                                                              60.1 -
+                                                                  currentMessage!
+                                                                      .content!
+                                                                      .length,
+                                                              10)),
+                                                          bottomRight: Radius
+                                                              .circular(max(
+                                                                  60.1 -
+                                                                      currentMessage!
+                                                                          .content!
+                                                                          .length,
+                                                                  10)),
+                                                          bottomLeft:
+                                                              Radius.zero,
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                          currentMessage!
+                                                              .content!,
+                                                          softWrap: true,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize:
+                                                                      16)),
+                                                    ),
                                                   ),
-                                                ),
-                                                child: Text(
-                                                    currentMessage!.content,
-                                                    softWrap: true,
-                                                    style: const TextStyle(
-                                                        fontSize: 16)),
-                                              ),
-                                            ),
                                           ]),
                                     ),
                                   ),
@@ -317,37 +410,116 @@ class _ChatViewState extends State<ChatView> {
                                       width: 90.w,
                                       child: Align(
                                         alignment: Alignment.centerRight,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: const Color.fromARGB(
-                                                255, 124, 32, 181),
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(max(
-                                                  60.1 -
-                                                      currentMessage!
-                                                          .content.length,
-                                                  10)),
-                                              topRight: Radius.circular(max(
-                                                  60.1 -
-                                                      currentMessage!
-                                                          .content.length,
-                                                  10)),
-                                              bottomLeft: Radius.circular(max(
-                                                  60.1 -
-                                                      currentMessage!
-                                                          .content.length,
-                                                  10)),
-                                              bottomRight: Radius.zero,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            currentMessage!.content,
-                                            softWrap: true,
-                                            style:
-                                                const TextStyle(fontSize: 16),
-                                          ),
-                                        ),
+                                        child: currentMessage!.content == null
+                                            ? InkWell(
+                                                onTap: () async {
+                                                  Posts post = await db.getPost(
+                                                      messeges[index]
+                                                          .postId!) as Posts;
+
+                                                  List<Posts> posts = [post];
+                                                  PersistentNavBarNavigator
+                                                      .pushNewScreen(context,
+                                                          screen: (ViewPost(
+                                                              posts: posts,
+                                                              index1: 0,
+                                                              personal: false,
+                                                              user: ownerUser)),
+                                                          withNavBar: true,
+                                                          pageTransitionAnimation:
+                                                              PageTransitionAnimation
+                                                                  .cupertino);
+                                                },
+                                                child: Container(
+                                                  height: 90.w,
+                                                  width: 76.w,
+                                                  decoration: BoxDecoration(
+                                                    color: const Color.fromARGB(
+                                                        255, 36, 34, 40),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                        top: 3.w),
+                                                    child: Column(
+                                                      children: [
+                                                        Container(
+                                                            width: 60.w,
+                                                            height: 80.w,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: const Color
+                                                                  .fromARGB(255,
+                                                                  38, 38, 38),
+                                                              image:
+                                                                  DecorationImage(
+                                                                image: NetworkImage(
+                                                                    currentMessage!
+                                                                        .imageLoc!),
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            )),
+                                                        const Text(
+                                                          'View Post',
+                                                          style: TextStyle(
+                                                              fontSize: 16,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      195,
+                                                                      233,
+                                                                      249),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w200),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Container(
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                                decoration: BoxDecoration(
+                                                  color: const Color.fromARGB(
+                                                      255, 124, 32, 181),
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                    topLeft: Radius.circular(
+                                                        max(
+                                                            60.1 -
+                                                                currentMessage!
+                                                                    .content!
+                                                                    .length,
+                                                            10)),
+                                                    topRight: Radius.circular(
+                                                        max(
+                                                            60.1 -
+                                                                currentMessage!
+                                                                    .content!
+                                                                    .length,
+                                                            10)),
+                                                    bottomLeft: Radius.circular(
+                                                        max(
+                                                            60.1 -
+                                                                currentMessage!
+                                                                    .content!
+                                                                    .length,
+                                                            10)),
+                                                    bottomRight: Radius.zero,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  currentMessage!.content!,
+                                                  softWrap: true,
+                                                  style: const TextStyle(
+                                                      fontSize: 16),
+                                                ),
+                                              ),
                                       ),
                                     ),
                                   ),
@@ -442,7 +614,8 @@ class _ChatViewState extends State<ChatView> {
                               var text = controller.text;
                               controller.text = '';
                               DataBase()
-                                  .sendMessage(chat, userNumber, text)
+                                  .sendMessage(
+                                      chat, userNumber, text, null, null)
                                   .then((value) {
                                 if (value) {
                                 } else {
@@ -492,8 +665,10 @@ Messages getMyObject(DocumentSnapshot snapshot) {
   String chatId = data['chatId'] as String;
   String senderUserId = data['senderUserId'] as String;
   String receicerUserId = data['receiverId'] as String;
-  String content = data['message'] as String;
+  String? content = data['message'];
   Timestamp time = data['time'] as Timestamp;
+  String? imageLoc = data['imageLoc'];
+  String? postId = data['postId'];
 
   DateTime timeDart = time.toDate();
 
@@ -502,6 +677,8 @@ Messages getMyObject(DocumentSnapshot snapshot) {
       senderUserId: senderUserId,
       receicerUserId: receicerUserId,
       content: content,
+      imageLoc: imageLoc,
+      postId: postId,
       time: timeDart);
 }
 

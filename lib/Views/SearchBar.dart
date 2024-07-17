@@ -25,7 +25,6 @@ class _SearchBarViewState extends State<SearchBarView> {
     user = widget.user;
   }
 
-  void deadFunction() {}
   @override
   Widget build(BuildContext context) {
     return Scaffold(

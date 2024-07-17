@@ -4,9 +4,10 @@ import 'package:mysocialmediaapp/utilities/color.dart';
 Future<void> showMessage(BuildContext context, String text) {
   return showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Message from dev'),
+          title: const Text('Message from the dev'),
           content: Text(text),
           actions: [
             OutlinedButton(

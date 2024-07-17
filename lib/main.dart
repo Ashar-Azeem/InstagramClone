@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:mysocialmediaapp/Views/LoginView.dart';
 import 'package:mysocialmediaapp/Views/MainUI.dart';
 import 'package:mysocialmediaapp/Views/RegistrationView.dart';
+import 'package:mysocialmediaapp/firebase_options.dart';
 import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
@@ -12,7 +13,7 @@ import 'package:sizer/sizer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);

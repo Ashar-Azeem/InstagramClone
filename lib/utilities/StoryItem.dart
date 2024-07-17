@@ -5,7 +5,7 @@ import 'package:mysocialmediaapp/Views/AddStoryView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/PageViewStorySlider.dart';
 import 'package:mysocialmediaapp/utilities/ViewStory.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:sizer/sizer.dart';
 
 class StoryItem extends StatefulWidget {

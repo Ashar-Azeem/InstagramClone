@@ -58,6 +58,7 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
                           user: user,
                           ownerUser: ownerUser,
                           isRequested: isRequested,
+                          rebuilt: widget.rebuilt,
                           oneContainerWidth: oneContainerWidth);
                     } else {
                       return const Center(

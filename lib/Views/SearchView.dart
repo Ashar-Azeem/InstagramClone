@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class SearchView extends StatefulWidget {
   final Users user;
@@ -30,13 +30,13 @@ class _SearchViewState extends State<SearchView>
     user = widget.user;
   }
 
-  void check(Posts post) {
+  void check(Posts post, index) {
     for (Posts p in documents) {
       if (p.postId == post.postId) {
         return;
       }
     }
-    documents.add(post);
+    documents.insert(index, post);
   }
 
   Future<void> refresh() async {
@@ -136,7 +136,7 @@ class _SearchViewState extends State<SearchView>
                                 whereIn: user.publicPosts!),
                         itemBuilder: (context, snapshot, index) {
                           var post = getObject(snapshot);
-                          check(post);
+                          check(post, index);
                           // if (user.following.contains(post.userId)) {
                           //   return SizedBox.shrink();
                           // }

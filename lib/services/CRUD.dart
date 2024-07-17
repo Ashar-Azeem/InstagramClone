@@ -118,6 +118,13 @@ class DataBase {
         await notificationCollection.doc(documentSnapshot.id).delete();
       }
 
+      QuerySnapshot comments =
+          await commentsCollection.where('postId', isEqualTo: postId).get();
+
+      for (QueryDocumentSnapshot documentSnapshot in comments.docs) {
+        await commentsCollection.doc(documentSnapshot.id).delete();
+      }
+
       return true;
     } catch (e) {
       //
@@ -780,14 +787,14 @@ class DataBase {
           .where('user2UserId', isEqualTo: receiverId)
           .limit(1)
           .get();
-      print(query1.docs.length);
+
       // Query 2: user2UserId matches senderId or receiverId
       var query2 = await chatCollection
           .where('user2UserId', isEqualTo: senderId)
           .where('user1UserId', isEqualTo: receiverId)
           .limit(1)
           .get();
-      print(query2.docs.length);
+
       List<QueryDocumentSnapshot> docs = query1.docs + query2.docs;
       if (docs.isEmpty) {
         return null;
@@ -862,7 +869,8 @@ class DataBase {
     }
   }
 
-  Future<bool> insertMessage(Chats chat, String message) async {
+  Future<bool> insertMessage(
+      Chats chat, String? message, String? imageLoc, String? postId) async {
     Timestamp now = Timestamp.fromDate(DateTime.now());
     try {
       await messageCollection.add({
@@ -870,6 +878,8 @@ class DataBase {
         'senderUserId': chat.user1UserId,
         'receiverId': chat.user2UserId,
         'message': message,
+        'imageLoc': imageLoc,
+        'postId': postId,
         'time': now,
       });
       return true;
@@ -925,15 +935,15 @@ class DataBase {
     }
   }
 
-  Future<bool> sendMessage(
-      Chats chat, int personalUserNumber, String message) async {
+  Future<bool> sendMessage(Chats chat, int personalUserNumber, String? message,
+      String? imageLoc, String? postId) async {
     try {
       if (chat.chatId == null) {
         //create chat document if it doesn't exists
         await createAChat(chat);
       }
 
-      var result = await insertMessage(chat, message);
+      var result = await insertMessage(chat, message, imageLoc, postId);
       if (!result) {
         return false;
       } else {
@@ -1064,15 +1074,19 @@ class Messages {
   late String chatId;
   late String senderUserId;
   late String receicerUserId;
-  late String content;
+  late String? content;
   late DateTime time;
+  String? imageLoc;
+  String? postId;
 
   Messages(
       {required this.chatId,
       required this.senderUserId,
       required this.receicerUserId,
       required this.content,
-      required this.time});
+      required this.time,
+      required this.imageLoc,
+      required this.postId});
 }
 
 class Chats {
