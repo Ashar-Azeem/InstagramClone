@@ -56,6 +56,28 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
     super.dispose();
   }
 
+  void makeTheObjectCorrect(Chats chat) {
+    if (chat.user1UserId == ownerUser.userId) {
+      return;
+    } else {
+      var temp = chat.user1Name;
+      chat.user1Name = chat.user2Name;
+      chat.user2Name = temp;
+
+      var temp1 = chat.user1UserName;
+      chat.user1UserName = chat.user2UserName;
+      chat.user2UserName = temp1;
+
+      var temp2 = chat.user1UserId;
+      chat.user1UserId = chat.user2UserId;
+      chat.user2UserId = temp2;
+
+      var temp3 = chat.user1ProfileLoc;
+      chat.user1ProfileLoc = chat.user2ProfileLoc;
+      chat.user2ProfileLoc = temp3;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(alignment: Alignment.center, children: [
@@ -158,7 +180,13 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                                 });
                                 if (chat.user1UserId == ownerUser.userId) {
                                   await DataBase().sendMessage(
-                                      chat, 1, null, post.postLoc, post.postId);
+                                      chat,
+                                      1,
+                                      null,
+                                      post.postLoc,
+                                      post.postId,
+                                      post.userId,
+                                      post.isPrivate);
 
                                   await sendNotification(
                                       chat.user2FCMToken,
@@ -166,8 +194,15 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                                       '${ownerUser.userName} send you a post',
                                       null);
                                 } else {
+                                  makeTheObjectCorrect(chat);
                                   await DataBase().sendMessage(
-                                      chat, 2, null, post.postLoc, post.postId);
+                                      chat,
+                                      2,
+                                      null,
+                                      post.postLoc,
+                                      post.postId,
+                                      post.userId,
+                                      post.isPrivate);
 
                                   await sendNotification(
                                       chat.user1FCMToken,
@@ -265,7 +300,9 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                                                             1,
                                                             null,
                                                             post.postLoc,
-                                                            post.postId);
+                                                            post.postId,
+                                                            post.userId,
+                                                            post.isPrivate);
 
                                                     await sendNotification(
                                                         users[index].token,
@@ -282,7 +319,9 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                                                               1,
                                                               null,
                                                               post.postLoc,
-                                                              post.postId);
+                                                              post.postId,
+                                                              post.userId,
+                                                              post.isPrivate);
 
                                                       await sendNotification(
                                                           chat!.user2FCMToken,
@@ -290,13 +329,17 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                                                           '${ownerUser.userName} send you a post',
                                                           null);
                                                     } else {
+                                                      makeTheObjectCorrect(
+                                                          chat!);
                                                       await DataBase()
                                                           .sendMessage(
                                                               chat!,
                                                               2,
                                                               null,
                                                               post.postLoc,
-                                                              post.postId);
+                                                              post.postId,
+                                                              post.userId,
+                                                              post.isPrivate);
 
                                                       await sendNotification(
                                                           chat!.user1FCMToken,

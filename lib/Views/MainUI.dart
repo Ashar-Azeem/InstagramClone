@@ -66,8 +66,11 @@ class _MainUIState extends State<MainUI> {
                   final imageLocation = value;
                   return PersistentTabView(context, screens: navigation,
                       onWillPop: (p0) {
-                    if (pageController.index <= 4) {
+                    if (pageController.index == 0) {
                       SystemNavigator.pop();
+                    } else if (pageController.index > 0 &&
+                        pageController.index < 5) {
+                      pageController.jumpToTab(0);
                     }
                     return Future(() => false);
                   },

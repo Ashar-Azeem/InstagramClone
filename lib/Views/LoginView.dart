@@ -61,7 +61,7 @@ class _LoginViewState extends State<LoginView> {
                   child: Column(children: [
                     TextField(
                       cursorColor: Colors.white,
-                      enableSuggestions: false,
+                      enableSuggestions: true,
                       autocorrect: false,
                       keyboardType: TextInputType.emailAddress,
                       controller: email,
@@ -116,20 +116,22 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    setState(() {
-                      loading = true;
-                    });
                     final e = email.text;
                     final p = password.text;
-                    loginUser(e, p, context).then((result) async {
+                    if (e.isNotEmpty && p.isNotEmpty) {
                       setState(() {
-                        loading = false;
+                        loading = true;
                       });
-                      if (result == 'success') {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                            MainUIRoute, (route) => false);
-                      }
-                    });
+                      loginUser(e, p, context).then((result) async {
+                        setState(() {
+                          loading = false;
+                        });
+                        if (result == 'success') {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                              MainUIRoute, (route) => false);
+                        }
+                      });
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(370, 50),
@@ -142,6 +144,8 @@ class _LoginViewState extends State<LoginView> {
                           style: TextStyle(color: primaryColor),
                         )
                       : const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          strokeCap: StrokeCap.round,
                           color: Colors.white,
                         ),
                 ),

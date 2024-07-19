@@ -1,11 +1,13 @@
 // ignore_for_file: file_names
 
 import 'dart:math';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
+import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
@@ -273,32 +275,66 @@ class _ChatViewState extends State<ChatView> {
                                                           color: Colors.white),
                                                     ),
                                                   )
-                                                : currentMessage!.content ==
+                                                : (currentMessage!.content ==
                                                         null
                                                     ? InkWell(
                                                         onTap: () async {
-                                                          Posts post = await db
-                                                                  .getPost(messeges[
-                                                                          index]
-                                                                      .postId!)
-                                                              as Posts;
+                                                          if (ownerUser
+                                                                  .userId ==
+                                                              messeges[index]
+                                                                  .postUserId) {
+                                                            return;
+                                                          }
 
-                                                          List<Posts> posts = [
-                                                            post
-                                                          ];
-                                                          PersistentNavBarNavigator.pushNewScreen(
-                                                              context,
-                                                              screen: (ViewPost(
-                                                                  posts: posts,
-                                                                  index1: 0,
-                                                                  personal:
-                                                                      false,
-                                                                  user:
-                                                                      ownerUser)),
-                                                              withNavBar: true,
-                                                              pageTransitionAnimation:
-                                                                  PageTransitionAnimation
-                                                                      .cupertino);
+                                                          if (ownerUser
+                                                                  .following
+                                                                  .contains(messeges[
+                                                                          index]
+                                                                      .postUserId) ||
+                                                              !messeges[index]
+                                                                  .isPrivatePost!) {
+                                                            Posts post = await db
+                                                                .getPost(messeges[
+                                                                        index]
+                                                                    .postId!) as Posts;
+
+                                                            List<Posts> posts =
+                                                                [post];
+                                                            PersistentNavBarNavigator.pushNewScreen(
+                                                                context,
+                                                                screen: (ViewPost(
+                                                                    posts:
+                                                                        posts,
+                                                                    index1: 0,
+                                                                    personal:
+                                                                        false,
+                                                                    user:
+                                                                        ownerUser)),
+                                                                withNavBar:
+                                                                    true,
+                                                                pageTransitionAnimation:
+                                                                    PageTransitionAnimation
+                                                                        .cupertino);
+                                                          } else {
+                                                            Users user = await db
+                                                                .getUser(messeges[
+                                                                        index]
+                                                                    .postUserId!) as Users;
+
+                                                            PersistentNavBarNavigator.pushNewScreen(
+                                                                context,
+                                                                screen: (VisitingProfileView(
+                                                                    user: user,
+                                                                    ownerUser:
+                                                                        ownerUser,
+                                                                    rebuilt:
+                                                                        null)),
+                                                                withNavBar:
+                                                                    true,
+                                                                pageTransitionAnimation:
+                                                                    PageTransitionAnimation
+                                                                        .cupertino);
+                                                          }
                                                         },
                                                         child: Container(
                                                           height: 89.w,
@@ -319,26 +355,46 @@ class _ChatViewState extends State<ChatView> {
                                                                     top: 2.w),
                                                             child: Column(
                                                               children: [
-                                                                Container(
-                                                                    width: 60.w,
-                                                                    height:
-                                                                        80.w,
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      color: const Color
-                                                                          .fromARGB(
-                                                                          255,
-                                                                          38,
-                                                                          38,
-                                                                          38),
-                                                                      image:
-                                                                          DecorationImage(
-                                                                        image: NetworkImage(
-                                                                            currentMessage!.imageLoc!),
-                                                                        fit: BoxFit
-                                                                            .cover,
-                                                                      ),
-                                                                    )),
+                                                                Stack(
+                                                                    children: [
+                                                                      Container(
+                                                                          width: 60
+                                                                              .w,
+                                                                          height: 80
+                                                                              .w,
+                                                                          decoration:
+                                                                              BoxDecoration(
+                                                                            color: const Color.fromARGB(
+                                                                                255,
+                                                                                38,
+                                                                                38,
+                                                                                38),
+                                                                            image:
+                                                                                DecorationImage(
+                                                                              image: NetworkImage(currentMessage!.imageLoc!),
+                                                                              fit: BoxFit.cover,
+                                                                            ),
+                                                                          )),
+                                                                      !ownerUser.following.contains(messeges[index].postUserId) &&
+                                                                              messeges[index].isPrivatePost! &&
+                                                                              ownerUser.userId != messeges[index].postUserId
+                                                                          ? Positioned.fill(
+                                                                              child: ClipRect(
+                                                                                child: BackdropFilter(
+                                                                                  filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                                                                                  child: Container(
+                                                                                    alignment: Alignment.center,
+                                                                                    color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.1),
+                                                                                    child: Icon(
+                                                                                      Icons.lock_person_outlined,
+                                                                                      size: 10.w,
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            )
+                                                                          : const SizedBox.shrink()
+                                                                    ]),
                                                                 const Text(
                                                                   'View Post',
                                                                   style: TextStyle(
@@ -404,7 +460,7 @@ class _ChatViewState extends State<ChatView> {
                                                                       fontSize:
                                                                           16)),
                                                         ),
-                                                      ),
+                                                      )),
                                           ]),
                                     ),
                                   ),
@@ -436,161 +492,219 @@ class _ChatViewState extends State<ChatView> {
                                     padding: EdgeInsets.only(
                                         left: 30.w, bottom: 1.h),
                                     child: SizedBox(
-                                      width: 90.w,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: currentMessage!.content ==
-                                                    null &&
-                                                currentMessage!.imageLoc == null
-                                            ? Container(
-                                                alignment: Alignment.center,
-                                                width: 50.w,
-                                                height: 20.w,
-                                                decoration: BoxDecoration(
-                                                  color: const Color.fromARGB(
-                                                      255, 51, 47, 58),
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
-                                                ),
-                                                child: const Text(
-                                                  textAlign: TextAlign.center,
-                                                  'Post Unavailable',
-                                                  style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.white),
-                                                ),
-                                              )
-                                            : currentMessage!.content == null
-                                                ? InkWell(
-                                                    onTap: () async {
-                                                      Posts post = await db
-                                                              .getPost(messeges[
-                                                                      index]
-                                                                  .postId!)
-                                                          as Posts;
-
-                                                      List<Posts> posts = [
-                                                        post
-                                                      ];
-                                                      PersistentNavBarNavigator
-                                                          .pushNewScreen(
-                                                              context,
-                                                              screen: (ViewPost(
-                                                                  posts: posts,
-                                                                  index1: 0,
-                                                                  personal:
-                                                                      false,
-                                                                  user:
-                                                                      ownerUser)),
-                                                              withNavBar: true,
-                                                              pageTransitionAnimation:
-                                                                  PageTransitionAnimation
-                                                                      .cupertino);
-                                                    },
-                                                    child: Container(
-                                                      height: 90.w,
-                                                      width: 76.w,
+                                        width: 90.w,
+                                        child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child:
+                                              currentMessage!.content == null &&
+                                                      currentMessage!
+                                                              .imageLoc ==
+                                                          null
+                                                  ? (Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      width: 50.w,
+                                                      height: 20.w,
                                                       decoration: BoxDecoration(
                                                         color: const Color
                                                             .fromARGB(
-                                                            255, 36, 34, 40),
+                                                            255, 51, 47, 58),
                                                         borderRadius:
                                                             BorderRadius
-                                                                .circular(10),
+                                                                .circular(6),
                                                       ),
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                top: 3.w),
-                                                        child: Column(
-                                                          children: [
-                                                            Container(
-                                                                width: 60.w,
-                                                                height: 80.w,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: const Color
-                                                                      .fromARGB(
-                                                                      255,
-                                                                      38,
-                                                                      38,
-                                                                      38),
-                                                                  image:
-                                                                      DecorationImage(
-                                                                    image: NetworkImage(
-                                                                        currentMessage!
-                                                                            .imageLoc!),
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                  ),
-                                                                )),
-                                                            const Text(
-                                                              'View Post',
-                                                              style: TextStyle(
-                                                                  fontSize: 16,
-                                                                  color: Color
-                                                                      .fromARGB(
-                                                                          255,
-                                                                          195,
-                                                                          233,
-                                                                          249),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w200),
-                                                            )
-                                                          ],
-                                                        ),
+                                                      child: const Text(
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        'Post Unavailable',
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color:
+                                                                Colors.white),
                                                       ),
-                                                    ),
-                                                  )
-                                                : Container(
-                                                    padding:
-                                                        const EdgeInsets.all(8),
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255,
-                                                              124,
-                                                              32,
-                                                              181),
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topLeft:
-                                                            Radius.circular(max(
-                                                                60.1 -
-                                                                    currentMessage!
-                                                                        .content!
-                                                                        .length,
-                                                                10)),
-                                                        topRight:
-                                                            Radius.circular(max(
-                                                                60.1 -
-                                                                    currentMessage!
-                                                                        .content!
-                                                                        .length,
-                                                                10)),
-                                                        bottomLeft:
-                                                            Radius.circular(max(
-                                                                60.1 -
-                                                                    currentMessage!
-                                                                        .content!
-                                                                        .length,
-                                                                10)),
-                                                        bottomRight:
-                                                            Radius.zero,
-                                                      ),
-                                                    ),
-                                                    child: Text(
-                                                      currentMessage!.content!,
-                                                      softWrap: true,
-                                                      style: const TextStyle(
-                                                          fontSize: 16),
-                                                    ),
-                                                  ),
-                                      ),
-                                    ),
+                                                    ))
+                                                  : (currentMessage!.content ==
+                                                          null
+                                                      ? (InkWell(
+                                                          onTap: () async {
+                                                            if (ownerUser
+                                                                    .userId ==
+                                                                messeges[index]
+                                                                    .postUserId) {
+                                                              return;
+                                                            }
+
+                                                            if (ownerUser
+                                                                    .following
+                                                                    .contains(messeges[
+                                                                            index]
+                                                                        .postUserId) ||
+                                                                !messeges[index]
+                                                                    .isPrivatePost!) {
+                                                              Posts post = await db
+                                                                  .getPost(messeges[
+                                                                          index]
+                                                                      .postId!) as Posts;
+
+                                                              List<Posts>
+                                                                  posts = [
+                                                                post
+                                                              ];
+                                                              PersistentNavBarNavigator.pushNewScreen(
+                                                                  context,
+                                                                  screen: (ViewPost(
+                                                                      posts:
+                                                                          posts,
+                                                                      index1: 0,
+                                                                      personal:
+                                                                          false,
+                                                                      user:
+                                                                          ownerUser)),
+                                                                  withNavBar:
+                                                                      true,
+                                                                  pageTransitionAnimation:
+                                                                      PageTransitionAnimation
+                                                                          .cupertino);
+                                                            } else {
+                                                              Users user = await db
+                                                                  .getUser(messeges[
+                                                                          index]
+                                                                      .postUserId!) as Users;
+
+                                                              PersistentNavBarNavigator.pushNewScreen(
+                                                                  context,
+                                                                  screen: (VisitingProfileView(
+                                                                      user:
+                                                                          user,
+                                                                      ownerUser:
+                                                                          ownerUser,
+                                                                      rebuilt:
+                                                                          null)),
+                                                                  withNavBar:
+                                                                      true,
+                                                                  pageTransitionAnimation:
+                                                                      PageTransitionAnimation
+                                                                          .cupertino);
+                                                            }
+                                                          },
+                                                          child: Container(
+                                                            height: 90.w,
+                                                            width: 76.w,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: const Color
+                                                                  .fromARGB(255,
+                                                                  36, 34, 40),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          10),
+                                                            ),
+                                                            child: Padding(
+                                                              padding: EdgeInsets
+                                                                  .only(
+                                                                      top: 3.w),
+                                                              child: Column(
+                                                                children: [
+                                                                  Stack(
+                                                                      children: [
+                                                                        Container(
+                                                                            width:
+                                                                                60.w,
+                                                                            height: 80.w,
+                                                                            decoration: BoxDecoration(
+                                                                              color: const Color.fromARGB(255, 38, 38, 38),
+                                                                              image: DecorationImage(
+                                                                                image: NetworkImage(currentMessage!.imageLoc!),
+                                                                                fit: BoxFit.cover,
+                                                                              ),
+                                                                            )),
+                                                                        !ownerUser.following.contains(messeges[index].postUserId) &&
+                                                                                messeges[index].isPrivatePost! &&
+                                                                                ownerUser.userId != messeges[index].postUserId
+                                                                            ? Positioned.fill(
+                                                                                child: ClipRect(
+                                                                                  child: BackdropFilter(
+                                                                                    filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                                                                                    child: Container(
+                                                                                      alignment: Alignment.center,
+                                                                                      color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.1),
+                                                                                      child: Icon(
+                                                                                        Icons.lock_person_outlined,
+                                                                                        size: 10.w,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              )
+                                                                            : const SizedBox.shrink()
+                                                                      ]),
+                                                                  const Text(
+                                                                    'View Post',
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            16,
+                                                                        color: Color.fromARGB(
+                                                                            255,
+                                                                            195,
+                                                                            233,
+                                                                            249),
+                                                                        fontWeight:
+                                                                            FontWeight.w200),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ))
+                                                      : Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: const Color
+                                                                .fromARGB(255,
+                                                                124, 32, 181),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .only(
+                                                              topLeft: Radius.circular(max(
+                                                                  60.1 -
+                                                                      currentMessage!
+                                                                          .content!
+                                                                          .length,
+                                                                  10)),
+                                                              topRight: Radius.circular(max(
+                                                                  60.1 -
+                                                                      currentMessage!
+                                                                          .content!
+                                                                          .length,
+                                                                  10)),
+                                                              bottomLeft: Radius
+                                                                  .circular(max(
+                                                                      60.1 -
+                                                                          currentMessage!
+                                                                              .content!
+                                                                              .length,
+                                                                      10)),
+                                                              bottomRight:
+                                                                  Radius.zero,
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            currentMessage!
+                                                                .content!,
+                                                            softWrap: true,
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        16),
+                                                          ),
+                                                        )),
+                                        )),
                                   ),
                                   previousMessage != null &&
                                           !isSameDay(previousMessage!.time,
@@ -683,8 +797,8 @@ class _ChatViewState extends State<ChatView> {
                               var text = controller.text;
                               controller.text = '';
                               DataBase()
-                                  .sendMessage(
-                                      chat, userNumber, text, null, null)
+                                  .sendMessage(chat, userNumber, text, null,
+                                      null, null, null)
                                   .then((value) {
                                 if (value) {
                                 } else {
@@ -738,8 +852,9 @@ Messages getMyObject(DocumentSnapshot snapshot) {
   Timestamp time = data['time'] as Timestamp;
   String? imageLoc = data['imageLoc'];
   String? postId = data['postId'];
-
+  String? postUserId = data['postUserId'];
   DateTime timeDart = time.toDate();
+  bool? isPrivatePost = data['isPrivatePost'];
 
   return Messages(
       chatId: chatId,
@@ -748,7 +863,9 @@ Messages getMyObject(DocumentSnapshot snapshot) {
       content: content,
       imageLoc: imageLoc,
       postId: postId,
-      time: timeDart);
+      time: timeDart,
+      postUserId: postUserId,
+      isPrivatePost: isPrivatePost);
 }
 
 bool isSameDay(DateTime date1, DateTime date2) {

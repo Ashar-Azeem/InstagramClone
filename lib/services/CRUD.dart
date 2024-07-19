@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mysocialmediaapp/Views/SearchView.dart';
+import 'package:mysocialmediaapp/Views/ChatView.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 
 class DataBase {
@@ -95,19 +95,7 @@ class DataBase {
     return null;
   }
 
-  Future<void> maintainance() async {
-    var docs = await postCollection.get();
-
-    for (QueryDocumentSnapshot doc in docs.docs) {
-      DocumentReference ref = postCollection.doc(doc.id);
-      var post = getObject(doc);
-      if (['zain', 'Spiderman69', 'simba'].contains(post.userName)) {
-        ref.update({'isPrivate': true});
-      } else {
-        ref.update({'isPrivate': false});
-      }
-    }
-  }
+  Future<void> maintainance() async {}
 
   Future<bool> deletePost(String postId, String loc) async {
     try {
@@ -230,6 +218,17 @@ class DataBase {
       for (QueryDocumentSnapshot doc in docs.docs) {
         DocumentReference ref = postCollection.doc(doc.id);
         ref.update({'isPrivate': privacy});
+      }
+
+      var messeges = await messageCollection
+          .where('postUserId', isEqualTo: userId)
+          .where('isPrivatePost', isNotEqualTo: null)
+          .get();
+      for (QueryDocumentSnapshot doc in messeges.docs) {
+        var messege = getMyObject(doc);
+        DocumentReference ref = messageCollection.doc(doc.id);
+
+        ref.update({'isPrivatePost': !messege.isPrivatePost!});
       }
     } catch (e) {
       //
@@ -603,6 +602,17 @@ class DataBase {
     return c;
   }
 
+  List<List<String>> partitionList(List<String> inputList, int partitionSize) {
+    List<List<String>> partitionedList = [];
+    for (int i = 0; i < inputList.length; i += partitionSize) {
+      int end = (i + partitionSize < inputList.length)
+          ? i + partitionSize
+          : inputList.length;
+      partitionedList.add(inputList.sublist(i, end));
+    }
+    return partitionedList;
+  }
+
   Future<List<List<Story>>> getStories(Users user) async {
     Timestamp currentDate = Timestamp.fromDate(DateTime.now());
     List<String> search =
@@ -610,31 +620,61 @@ class DataBase {
     search.add(user.userId);
     List<List<Story>> stories = [];
     try {
-      var data = await storyCollection
-          .where('userId', whereIn: search)
-          .where('finishDateTime', isGreaterThan: currentDate)
-          .orderBy('finishDateTime', descending: false)
-          .get();
+      if (search.length > 30) {
+        List<List<String>> dividedList = partitionList(search, 30);
+        for (List<String> element in dividedList) {
+          var data = await storyCollection
+              .where('userId', whereIn: element)
+              .where('finishDateTime', isGreaterThan: currentDate)
+              .orderBy('finishDateTime', descending: false)
+              .get();
 
-      for (QueryDocumentSnapshot document in data.docs) {
-        Story story = makeStoryObject(document);
+          for (QueryDocumentSnapshot document in data.docs) {
+            Story story = makeStoryObject(document);
 
-        for (var i = 0; i < stories.length; i++) {
-          if (checkCondition(stories[i], story)) {
-            stories[i].add(story);
-            break;
-          } else if (i == stories.length - 1) {
-            stories.add([story]);
-            break;
+            for (var i = 0; i < stories.length; i++) {
+              if (checkCondition(stories[i], story)) {
+                stories[i].add(story);
+                break;
+              } else if (i == stories.length - 1) {
+                stories.add([story]);
+                break;
+              }
+            }
+
+            if (stories.isEmpty) {
+              stories.add([story]);
+            }
           }
         }
 
-        if (stories.isEmpty) {
-          stories.add([story]);
-        }
-      }
+        return stories;
+      } else {
+        var data = await storyCollection
+            .where('userId', whereIn: search)
+            .where('finishDateTime', isGreaterThan: currentDate)
+            .orderBy('finishDateTime', descending: false)
+            .get();
 
-      return stories;
+        for (QueryDocumentSnapshot document in data.docs) {
+          Story story = makeStoryObject(document);
+
+          for (var i = 0; i < stories.length; i++) {
+            if (checkCondition(stories[i], story)) {
+              stories[i].add(story);
+              break;
+            } else if (i == stories.length - 1) {
+              stories.add([story]);
+              break;
+            }
+          }
+
+          if (stories.isEmpty) {
+            stories.add([story]);
+          }
+        }
+        return stories;
+      }
     } catch (e) {}
     return stories;
   }
@@ -870,8 +910,8 @@ class DataBase {
     }
   }
 
-  Future<bool> insertMessage(
-      Chats chat, String? message, String? imageLoc, String? postId) async {
+  Future<bool> insertMessage(Chats chat, String? message, String? imageLoc,
+      String? postId, String? postUserId, bool? isPrivatePost) async {
     Timestamp now = Timestamp.fromDate(DateTime.now());
     try {
       await messageCollection.add({
@@ -882,9 +922,12 @@ class DataBase {
         'imageLoc': imageLoc,
         'postId': postId,
         'time': now,
+        'postUserId': postUserId,
+        'isPrivatePost': isPrivatePost
       });
       return true;
     } catch (e) {
+      print(e);
       return false;
     }
   }
@@ -936,15 +979,22 @@ class DataBase {
     }
   }
 
-  Future<bool> sendMessage(Chats chat, int personalUserNumber, String? message,
-      String? imageLoc, String? postId) async {
+  Future<bool> sendMessage(
+      Chats chat,
+      int personalUserNumber,
+      String? message,
+      String? imageLoc,
+      String? postId,
+      String? postUserId,
+      bool? isPrivatePost) async {
     try {
       if (chat.chatId == null) {
         //create chat document if it doesn't exists
         await createAChat(chat);
       }
 
-      var result = await insertMessage(chat, message, imageLoc, postId);
+      var result = await insertMessage(
+          chat, message, imageLoc, postId, postUserId, isPrivatePost);
       if (!result) {
         return false;
       } else {
@@ -1078,7 +1128,9 @@ class Messages {
   late String? content;
   late DateTime time;
   String? imageLoc;
+  String? postUserId;
   String? postId;
+  bool? isPrivatePost;
 
   Messages(
       {required this.chatId,
@@ -1087,7 +1139,9 @@ class Messages {
       required this.content,
       required this.time,
       required this.imageLoc,
-      required this.postId});
+      required this.postId,
+      required this.postUserId,
+      required this.isPrivatePost});
 }
 
 class Chats {

@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mysocialmediaapp/services/AuthExceptions.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/FireBaseMessaging.dart';
 import 'package:mysocialmediaapp/services/SendingNotification.dart';
@@ -32,7 +31,7 @@ Future<String?> registrationBackEnd(String e, String p, String n, String u,
       await showErrorDialog(context, 'UserName Already exists');
     }
   } catch (e) {
-    showErrorDialog(context, e.toString());
+    showErrorDialog(context, 'Authentication Error');
   }
   return null;
 }
@@ -45,12 +44,8 @@ Future<String> loginUser(
     await DataBase().updateToken(FirebaseAuth.instance.currentUser!.uid, token);
 
     return 'success';
-  } on UserNotFoundAuthException {
-    await showErrorDialog(context, 'User not found');
-  } on WrongPasswordAuthException {
-    await showErrorDialog(context, 'Incorrect password  ');
-  } on GenericAuthException {
-    await showErrorDialog(context, 'Authentication error');
+  } catch (e) {
+    showErrorDialog(context, 'Authentication Error');
   }
   return 'failure';
 }
