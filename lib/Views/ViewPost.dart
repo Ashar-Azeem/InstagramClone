@@ -372,7 +372,7 @@ class _ViewPostState extends State<ViewPost> {
                                 count[index]++;
 
                                 if (count[index] <= 3) {
-                                  DataBase().addLike(posts[index], user);
+                                  await DataBase().addLike(posts[index], user);
                                   if (count[index] <= 1) {
                                     sendLikeNotification(user, posts[index]);
                                   }
@@ -412,7 +412,7 @@ class _ViewPostState extends State<ViewPost> {
                                               posts[index].totalLikes -= 1;
                                             });
                                             if (count[index] <= 3) {
-                                              DataBase().removeLike(
+                                              await DataBase().removeLike(
                                                   posts[index], user);
                                               DataBase().deleteNotification(
                                                   posts[index],
@@ -432,7 +432,7 @@ class _ViewPostState extends State<ViewPost> {
                                               posts[index].totalLikes += 1;
                                             });
                                             if (count[index] <= 3) {
-                                              DataBase()
+                                              await DataBase()
                                                   .addLike(posts[index], user);
 
                                               if (count[index] <= 1) {

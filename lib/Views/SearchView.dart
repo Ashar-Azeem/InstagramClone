@@ -171,7 +171,7 @@ class _SearchViewState extends State<SearchView>
                                   index1: 0,
                                   personal: false,
                                   user: user,
-                                  rebuilt: refresh,
+                                  rebuilt: null,
                                 ),
                               ));
                         },

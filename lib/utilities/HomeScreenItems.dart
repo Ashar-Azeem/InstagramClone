@@ -4,6 +4,7 @@ import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/ModalBottomSheet.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 import 'package:mysocialmediaapp/utilities/shareModalSheet.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
@@ -131,7 +132,7 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                                 )));
                   },
                 ),
-                post.userName == 'ashar' || post.userName == 'vaneeza'
+                post.userName == name1 || post.userName == name2
                     ? Padding(
                         padding: EdgeInsets.only(left: 2.w),
                         child: const Icon(

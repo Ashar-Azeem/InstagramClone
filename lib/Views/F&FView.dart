@@ -6,6 +6,7 @@ import 'package:mysocialmediaapp/Views/ChatView.dart';
 import 'package:mysocialmediaapp/Views/visitingProfileView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:sizer/sizer.dart';
@@ -211,13 +212,32 @@ class _FollowersAndFollowingViewState extends State<FollowersAndFollowingView> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Text(
-                                              fUser.userName,
-                                              softWrap: false,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 14),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  fUser.userName,
+                                                  softWrap: false,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 14),
+                                                ),
+                                                fUser.userName == name1 ||
+                                                        fUser.userName == name2
+                                                    ? Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 2.w),
+                                                        child: const Icon(
+                                                          Icons.verified,
+                                                          color: blueColor,
+                                                          size: 15,
+                                                        ),
+                                                      )
+                                                    : const SizedBox.shrink(),
+                                              ],
                                             ),
                                             Text(
                                               fUser.name,
@@ -466,16 +486,17 @@ Users getObject(DocumentSnapshot snapshot) {
   List<String> following = List<String>.from(data['following']);
   bool isPrivate = data['privateAccount'] as bool;
   String token = data['token'];
+  bool isVerified = data['isVerified'];
   Users user = Users(
-    id: snapshot.id,
-    n: name,
-    un: userName,
-    loc: profileLocation,
-    f1: followers,
-    f2: following,
-    isPriv: isPrivate,
-    FCMtoken: token,
-  );
+      id: snapshot.id,
+      n: name,
+      un: userName,
+      loc: profileLocation,
+      f1: followers,
+      f2: following,
+      isPriv: isPrivate,
+      FCMtoken: token,
+      isverified: isVerified);
 
   return user;
 }

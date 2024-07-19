@@ -134,16 +134,17 @@ Users getObject(DocumentSnapshot snapshot) {
   List<String> following = List<String>.from(data['following']);
   bool isPrivate = data['privateAccount'] as bool;
   String token = data['token'];
+  bool isVerified = data['isVerified'];
   Users user = Users(
-    id: snapshot.id,
-    n: name,
-    un: userName,
-    loc: profileLocation,
-    f1: followers,
-    f2: following,
-    isPriv: isPrivate,
-    FCMtoken: token,
-  );
+      id: snapshot.id,
+      n: name,
+      un: userName,
+      loc: profileLocation,
+      f1: followers,
+      f2: following,
+      isPriv: isPrivate,
+      FCMtoken: token,
+      isverified: isVerified);
 
   return user;
 }

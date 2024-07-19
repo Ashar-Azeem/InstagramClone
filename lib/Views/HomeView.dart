@@ -266,6 +266,7 @@ class _HomeViewState extends State<HomeView> {
                                         userStories: userStories,
                                         ownerUser: ownerUser)),
                                 FirestorePagination(
+                                    key: ValueKey(ownerUser),
                                     isLive: true,
                                     shrinkWrap: true,
                                     viewType: ViewType.list,

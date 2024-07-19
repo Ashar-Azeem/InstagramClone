@@ -95,8 +95,6 @@ class DataBase {
     return null;
   }
 
-  Future<void> maintainance() async {}
-
   Future<bool> deletePost(String postId, String loc) async {
     try {
       await postCollection.doc(postId).delete();
@@ -287,7 +285,7 @@ class DataBase {
         List<String> following = List<String>.from(data1['following']);
         bool isPrivate = data1['privateAccount'] as bool;
         String token = data1['token'];
-
+        bool isVerified = data1['isVerified'];
         Users user = Users(
             id: documentSnapshot.id,
             n: name,
@@ -296,7 +294,8 @@ class DataBase {
             f1: followers,
             f2: following,
             isPriv: isPrivate,
-            FCMtoken: token);
+            FCMtoken: token,
+            isverified: isVerified);
         if (user.userId != FirebaseAuth.instance.currentUser!.uid) {
           users.add(user);
         }
@@ -325,6 +324,7 @@ class DataBase {
         'following': following,
         'privateAccount': false,
         'token': token,
+        'isVerified': false,
       });
     } catch (e) {
       //
@@ -691,7 +691,7 @@ class DataBase {
         List<String> following = List<String>.from(data['following']);
         bool isPrivate = data['privateAccount'] as bool;
         String token = data['token'];
-
+        bool isVerified = data['isVerified'];
         Users user;
 
         user = Users(
@@ -703,6 +703,7 @@ class DataBase {
           f2: following,
           isPriv: isPrivate,
           FCMtoken: token,
+          isverified: isVerified,
         );
 
         return user;
@@ -1186,6 +1187,7 @@ class Users {
   late List<String> following;
   late bool isPrivate;
   late String token;
+  late bool isVerified;
 
   Users({
     required String id,
@@ -1196,6 +1198,7 @@ class Users {
     required List<String> f2,
     required bool isPriv,
     required String FCMtoken,
+    required bool isverified,
   }) {
     userId = id;
     name = n;
@@ -1205,6 +1208,7 @@ class Users {
     following = f2;
     isPrivate = isPriv;
     token = FCMtoken;
+    isVerified = isverified;
   }
 
   @override

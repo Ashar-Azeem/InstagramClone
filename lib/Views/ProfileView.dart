@@ -10,6 +10,7 @@ import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/services/firebase.dart';
 import 'package:mysocialmediaapp/utilities/DeveloperMesssage.dart';
+import 'package:mysocialmediaapp/utilities/const.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 import 'package:sizer/sizer.dart';
@@ -69,12 +70,26 @@ class _ProfileViewState extends State<ProfileView> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 15, left: 27.0),
-                        child: Text(
-                          user.userName,
-                          style: const TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                        child: Row(
+                          children: [
+                            Text(
+                              user.userName,
+                              style: const TextStyle(
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                            ),
+                            user.userName == name1 || user.userName == name2
+                                ? Padding(
+                                    padding: EdgeInsets.only(left: 2.w),
+                                    child: const Icon(
+                                      Icons.verified,
+                                      color: Colors.blue,
+                                      size: 17,
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ],
                         ),
                       ),
                       PopupMenuButton<String>(
