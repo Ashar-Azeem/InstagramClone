@@ -8,6 +8,7 @@ import 'package:mysocialmediaapp/Views/SearchBar.dart';
 import 'package:mysocialmediaapp/Views/ViewPost.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:sizer/sizer.dart';
 
 class SearchView extends StatefulWidget {
   final Users user;
@@ -21,26 +22,17 @@ class _SearchViewState extends State<SearchView>
     with AutomaticKeepAliveClientMixin {
   bool rebuilt = false;
   late Users user;
-  List<Posts> documents = [];
+  List<Posts?> documents = [];
   DataBase db = DataBase();
-
+  bool planB = true;
   @override
   void initState() {
     super.initState();
     user = widget.user;
   }
 
-  void check(Posts post, index) {
-    for (Posts p in documents) {
-      if (p.postId == post.postId) {
-        return;
-      }
-    }
-    documents.insert(index, post);
-  }
-
   Future<void> refresh() async {
-    var user1 = await db.getUser(user.userId, true);
+    var user1 = await db.getUser(user.userId);
     setState(() {
       user = user1!;
       rebuilt = !rebuilt;
@@ -101,98 +93,106 @@ class _SearchViewState extends State<SearchView>
             SliverPadding(
               padding: const EdgeInsets.only(left: 5, right: 5),
               sliver: SliverToBoxAdapter(
-                child: user.publicPosts == null
-                    ? const Text("No Posts yet")
-                    : FirestorePagination(
-                        key: ValueKey(rebuilt),
-                        isLive: true,
-                        shrinkWrap: true,
-                        viewType: ViewType.grid,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 2,
-                                mainAxisSpacing: 2,
-                                childAspectRatio: 0.945),
-                        onEmpty: const Text(
-                            'No Exploring data is available at the moment'),
-                        initialLoader: const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                        bottomLoader: const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                        limit: 18,
-                        query: FirebaseFirestore.instance
-                            .collection('posts')
-                            .orderBy('uploadDateTime', descending: true)
-                            .where(FieldPath.documentId,
-                                whereIn: user.publicPosts!),
-                        itemBuilder: (context, snapshot, index) {
-                          var post = getObject(snapshot);
-                          check(post, index);
-                          // if (user.following.contains(post.userId)) {
-                          //   return SizedBox.shrink();
-                          // }
-                          return InkWell(
-                              onTap: () async {
-                                Posts post = documents[index];
-                                List<Posts> sublist = documents
-                                    .where((element) =>
-                                        element.userId == post.userId)
-                                    .toList();
+                child: FirestorePagination(
+                    key: ValueKey(rebuilt),
+                    isLive: true,
+                    shrinkWrap: true,
+                    viewType: ViewType.grid,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 2,
+                            mainAxisSpacing: 2),
+                    onEmpty: const Center(
+                      child:
+                          Text('No Exploring data is available at the moment'),
+                    ),
+                    initialLoader: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    bottomLoader: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    limit: 18,
+                    query: FirebaseFirestore.instance
+                        .collection('posts')
+                        .orderBy('uploadDateTime', descending: true)
+                        .where('isPrivate', isEqualTo: false),
+                    itemBuilder: (context, snapshot, index) {
+                      var post = getObject(snapshot);
 
-                                var range = 12;
-                                var length = sublist.length;
-                                if (length < range) {
-                                  for (var i = 0; i < range - length; i++) {
-                                    var l = documents
-                                        .where((element) =>
-                                            !sublist.contains(element))
-                                        .toList();
-                                    var element = Random().nextInt(l.length);
-                                    sublist.add(l[element]);
-                                  }
+                      documents.insert(index, post);
+
+                      return InkWell(
+                        onTap: () async {
+                          Posts post = documents[index] as Posts;
+                          List<Posts> sublist = [];
+                          for (var i = 0; i < documents.length; i++) {
+                            if (documents[i] != null &&
+                                documents[i]!.userId == post.userId &&
+                                !sublist.contains(documents[i]) &&
+                                sublist.length < 12) {
+                              sublist.add(documents[i]!);
+                            }
+                          }
+
+                          var range = 12;
+                          var length = sublist.length;
+
+                          if (length < range) {
+                            List<Posts> l = [];
+                            for (var i = 0; i < range - length; i++) {
+                              for (var j = 0; j < documents.length; j++) {
+                                if (documents[j] != null &&
+                                    !sublist.contains(documents[j])) {
+                                  l.add(documents[j]!);
                                 }
-                                sublist.removeWhere(
-                                    (element) => element.postId == post.postId);
-                                sublist.shuffle();
-                                sublist.insert(0, post);
+                              }
+                              var element = Random().nextInt(l.length);
+                              sublist.add(l[element]);
+                            }
+                          }
+                          sublist.removeWhere(
+                              (element) => element.postId == post.postId);
+                          sublist.shuffle();
+                          sublist.insert(0, post);
 
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ViewPost(
-                                        posts: sublist,
-                                        index1: 0,
-                                        personal: false,
-                                        user: user,
-                                        rebuilt: refresh,
-                                      ),
-                                    ));
-                              },
-                              child: Material(
-                                type: MaterialType.transparency,
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 38, 38, 38),
-                                  borderRadius: BorderRadius.circular(0),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      post.postLoc,
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                )),
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewPost(
+                                  posts: sublist,
+                                  index1: 0,
+                                  personal: false,
+                                  user: user,
+                                  rebuilt: refresh,
+                                ),
                               ));
                         },
-                      ),
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: Container(
+                              width: (100.w / 3) - 4,
+                              height: 100.h / 5.5,
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 38, 38, 38),
+                                borderRadius: BorderRadius.circular(0),
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                    post.postLoc,
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                              )),
+                        ),
+                      );
+                    }),
               ),
             )
           ]),
@@ -217,11 +217,12 @@ Posts getObject(DocumentSnapshot snapshot) {
   int totalComments = data['totalComments'] as int;
   Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
   List<String> likesList = List<String>.from(data['likesList']);
-
+  bool isPrivate = data['isPrivate'];
   DateTime dartDate = firebaseDate.toDate();
 
   Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-      profileLoc, postLoc, content, dartDate, likesList);
+      profileLoc, postLoc, content, dartDate, likesList,
+      isPrivate: isPrivate);
 
   return post;
 }

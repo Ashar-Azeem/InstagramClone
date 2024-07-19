@@ -129,11 +129,31 @@ class _SearchBarViewState extends State<SearchBarView> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              users[index].userName,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 14),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  users[index].userName,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 14),
+                                                ),
+                                                users[index].userName ==
+                                                            'ashar' ||
+                                                        user.userName ==
+                                                            'vaneeza'
+                                                    ? Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 2.w),
+                                                        child: const Icon(
+                                                          Icons.verified,
+                                                          color: Colors.blue,
+                                                          size: 15,
+                                                        ),
+                                                      )
+                                                    : const SizedBox.shrink()
+                                              ],
                                             ),
                                             Text(
                                               users[index].name,
@@ -143,7 +163,7 @@ class _SearchBarViewState extends State<SearchBarView> {
                                             ),
                                           ],
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),

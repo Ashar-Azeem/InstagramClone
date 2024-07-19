@@ -116,8 +116,11 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                     ),
                   ),
                   onTap: () async {
+                    if (post.userId == ownerUser.userId) {
+                      return;
+                    }
                     Users user1 =
-                        await DataBase().getUser(post.userId, false) as Users;
+                        await DataBase().getUser(post.userId) as Users;
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -128,7 +131,17 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                                 )));
                   },
                 ),
-                ownerUser.following.isEmpty
+                post.userName == 'ashar' || post.userName == 'vaneeza'
+                    ? Padding(
+                        padding: EdgeInsets.only(left: 2.w),
+                        child: const Icon(
+                          Icons.verified,
+                          color: blueColor,
+                          size: 15,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                ownerUser.following.isEmpty && ownerUser.userId != post.userId
                     ? Padding(
                         padding: EdgeInsets.only(left: 38.w),
                         child: InkWell(
@@ -160,7 +173,7 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                           onTap: () async {
                             DataBase db = DataBase();
                             Users otherUser =
-                                await db.getUser(post.userId, false) as Users;
+                                await db.getUser(post.userId) as Users;
                             if (ownerUser.following.contains(post.userId)) {
                               removeRelationship(otherUser, ownerUser, db)
                                   .then((value) {
@@ -185,153 +198,161 @@ class _HomeScreenItemsState extends State<HomeScreenItems> {
                       )
                     : const SizedBox.shrink(),
               ]),
-          Padding(
-            padding: const EdgeInsets.only(top: 7),
-            child: GestureDetector(
-              child: Stack(alignment: Alignment.center, children: [
-                Container(
-                    width: screenWidth,
-                    height: screenHeight - 380,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(0),
-                      image: DecorationImage(
-                        image: NetworkImage(post.postLoc),
-                        fit: BoxFit.cover,
-                      ),
-                    )),
-                Opacity(
-                  opacity: isHeartAnimating ? 1 : 0,
-                  child: HeartAnimationWidget(
-                      isAnimating: isHeartAnimating,
-                      duration: const Duration(milliseconds: 750),
-                      onEnd: () {
-                        setState(() {
-                          isHeartAnimating = false;
-                        });
-                      },
-                      child: const Icon(
-                        Icons.favorite,
-                        color: Colors.white,
-                        size: 100,
-                      )),
-                )
-              ]),
-              onDoubleTap: () async {
-                setState(() {
-                  isHeartAnimating = true;
-                  if (!isLiked) {
-                    post.totalLikes += 1;
-                    post.likesList.add(ownerUser.userId);
-                  }
-                });
-                if (!isLiked) {
-                  count++;
-                  if (count <= 3) {
-                    DataBase().addLike(post, ownerUser);
-                    if (count <= 1) {
-                      sendLikeNotification(ownerUser, post);
-                    }
-                  }
-                  isLiked = true;
-                }
-              },
-            ),
+          const Divider(
+            height: 0.5,
+            thickness: 0.5,
+            indent: null,
+            endIndent: null,
+            color: Colors.white,
           ),
-          Padding(
-            padding: const EdgeInsets.only(),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      IconButton(
-                          onPressed: () async {
-                            count++;
-                            if (post.likesList.contains(ownerUser.userId)) {
-                              setState(() {
-                                isLiked = false;
-                                post.likesList.remove(ownerUser.userId);
-                                post.totalLikes -= 1;
-                              });
-                              if (count <= 3) {
-                                DataBase().removeLike(post, ownerUser);
-                                DataBase().deleteNotification(
-                                    post, ownerUser, null, true, false, false);
-                              }
-                            } else {
-                              setState(() {
-                                isHeartAnimating = true;
-                                isLiked = true;
-                                post.likesList.add(ownerUser.userId);
-                                post.totalLikes += 1;
-                              });
-                              if (count <= 3) {
-                                DataBase().addLike(post, ownerUser);
-                                if (count <= 1) {
-                                  sendLikeNotification(ownerUser, post);
-                                }
-                              }
-                            }
-                          },
-                          icon: post.likesList.contains(ownerUser.userId)
-                              ? const Icon(
-                                  Icons.favorite,
-                                  size: 32,
-                                  color: Color.fromARGB(255, 230, 29, 15),
-                                )
-                              : const Icon(
-                                  Icons.favorite_border_outlined,
-                                  size: 32,
-                                  color: Colors.white,
-                                )),
-                      IconButton(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              useRootNavigator: true,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 34, 38, 41),
-                              context: context,
-                              builder: (context) {
-                                return CustomBottomSheet(
-                                  screenHeight: screenHeight,
-                                  screenWidth: screenWidth,
-                                  ownerUser: ownerUser,
-                                  post: post,
-                                );
-                              },
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.mode_comment_outlined,
+          GestureDetector(
+            child: Stack(alignment: Alignment.center, children: [
+              Container(
+                  padding: null,
+                  width: screenWidth,
+                  height: screenHeight - 380,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    image: DecorationImage(
+                      image: NetworkImage(post.postLoc),
+                      fit: BoxFit.fitWidth,
+                    ),
+                  )),
+              Opacity(
+                opacity: isHeartAnimating ? 1 : 0,
+                child: HeartAnimationWidget(
+                    isAnimating: isHeartAnimating,
+                    duration: const Duration(milliseconds: 750),
+                    onEnd: () {
+                      setState(() {
+                        isHeartAnimating = false;
+                      });
+                    },
+                    child: const Icon(
+                      Icons.favorite,
+                      shadows: <Shadow>[
+                        Shadow(color: Colors.black, blurRadius: 15.0)
+                      ],
+                      color: Colors.white,
+                      size: 100,
+                    )),
+              )
+            ]),
+            onDoubleTap: () async {
+              setState(() {
+                isHeartAnimating = true;
+                if (!isLiked) {
+                  post.totalLikes += 1;
+                  post.likesList.add(ownerUser.userId);
+                }
+              });
+              if (!isLiked) {
+                count++;
+                if (count <= 3) {
+                  DataBase().addLike(post, ownerUser);
+                  if (count <= 1) {
+                    sendLikeNotification(ownerUser, post);
+                  }
+                }
+                isLiked = true;
+              }
+            },
+          ),
+          const Divider(
+            height: 0.5,
+            thickness: .5,
+            indent: null,
+            endIndent: null,
+            color: Colors.white,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+                IconButton(
+                    onPressed: () async {
+                      count++;
+                      if (post.likesList.contains(ownerUser.userId)) {
+                        setState(() {
+                          isLiked = false;
+                          post.likesList.remove(ownerUser.userId);
+                          post.totalLikes -= 1;
+                        });
+                        if (count <= 3) {
+                          DataBase().removeLike(post, ownerUser);
+                          DataBase().deleteNotification(
+                              post, ownerUser, null, true, false, false);
+                        }
+                      } else {
+                        setState(() {
+                          isHeartAnimating = true;
+                          isLiked = true;
+                          post.likesList.add(ownerUser.userId);
+                          post.totalLikes += 1;
+                        });
+                        if (count <= 3) {
+                          DataBase().addLike(post, ownerUser);
+                          if (count <= 1) {
+                            sendLikeNotification(ownerUser, post);
+                          }
+                        }
+                      }
+                    },
+                    icon: post.likesList.contains(ownerUser.userId)
+                        ? const Icon(
+                            Icons.favorite,
+                            size: 32,
+                            color: Color.fromARGB(255, 230, 29, 15),
+                          )
+                        : const Icon(
+                            Icons.favorite_border_outlined,
+                            size: 32,
                             color: Colors.white,
-                            size: 30,
                           )),
-                      IconButton(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              useSafeArea: false,
-                              showDragHandle: true,
-                              isScrollControlled: true,
-                              useRootNavigator: true,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 34, 38, 41),
-                              context: context,
-                              builder: (context) {
-                                return ShareBottomSheet(
-                                    ownerUser: ownerUser, post: post);
-                              },
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.send,
-                            color: Colors.white,
-                            size: 30,
-                          ))
-                    ]),
-              ],
-            ),
+                IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        useRootNavigator: true,
+                        backgroundColor: const Color.fromARGB(255, 34, 38, 41),
+                        context: context,
+                        builder: (context) {
+                          return CustomBottomSheet(
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth,
+                            ownerUser: ownerUser,
+                            post: post,
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.mode_comment_outlined,
+                      color: Colors.white,
+                      size: 30,
+                    )),
+                IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        useSafeArea: false,
+                        showDragHandle: true,
+                        isScrollControlled: true,
+                        useRootNavigator: true,
+                        backgroundColor: const Color.fromARGB(255, 34, 38, 41),
+                        context: context,
+                        builder: (context) {
+                          return ShareBottomSheet(
+                              ownerUser: ownerUser, post: post);
+                        },
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                      size: 30,
+                    ))
+              ]),
+            ],
           ),
           Row(mainAxisAlignment: MainAxisAlignment.start, children: [
             post.totalLikes > 3

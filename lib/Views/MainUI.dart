@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/Views/AddpostView.dart';
@@ -8,6 +10,8 @@ import 'package:mysocialmediaapp/Views/SearchView.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:sizer/sizer.dart';
+import 'package:flutter/services.dart';
 
 class MainUI extends StatefulWidget {
   const MainUI({super.key});
@@ -46,7 +50,7 @@ class _MainUIState extends State<MainUI> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: db.getUser(FirebaseAuth.instance.currentUser!.uid, true),
+      future: db.getUser(FirebaseAuth.instance.currentUser!.uid),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
@@ -60,8 +64,14 @@ class _MainUIState extends State<MainUI> {
                 valueListenable: ProfilePicture(),
                 builder: (context, value, child) {
                   final imageLocation = value;
-                  return PersistentTabView(context,
-                      screens: navigation,
+                  return PersistentTabView(context, screens: navigation,
+                      onWillPop: (p0) {
+                    if (pageController.index <= 4) {
+                      SystemNavigator.pop();
+                    }
+                    return Future(() => false);
+                  },
+                      handleAndroidBackButtonPress: false,
                       controller: pageController,
                       navBarStyle: NavBarStyle.style6,
                       hideNavigationBarWhenKeyboardAppears: true,
@@ -98,15 +108,22 @@ class _MainUIState extends State<MainUI> {
                           iconSize: 30,
                         ),
                         PersistentBottomNavBarItem(
-                            icon: CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              backgroundImage: imageLocation == null
-                                  ? const AssetImage('assets/blankprofile.png')
-                                      as ImageProvider
-                                  : NetworkImage(
-                                      imageLocation,
-                                    ),
-                            ),
+                            icon: Container(
+                                width: 10.w,
+                                height: 10.w,
+                                decoration: BoxDecoration(
+                                  color:
+                                      const Color.fromARGB(255, 116, 116, 116),
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: imageLocation == null
+                                        ? const AssetImage(
+                                                'assets/blankprofile.png')
+                                            as ImageProvider
+                                        : NetworkImage(imageLocation),
+                                    fit: BoxFit.fitWidth,
+                                  ),
+                                )),
                             iconSize: 30)
                       ]);
                 });
@@ -124,36 +141,5 @@ class _MainUIState extends State<MainUI> {
         }
       },
     );
-  }
-
-  PersistentBottomNavBarItem customNavigationBarItem({
-    required IconData icon,
-    required String label,
-    required String? avatarImage,
-  }) {
-    return avatarImage != null
-        ? PersistentBottomNavBarItem(
-            icon: Container(
-              width: 36.0,
-              height: 36.0,
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white, // Border color
-                    width: 1.0, // Border width
-                  )),
-              child: CircleAvatar(
-                backgroundColor: Colors.black,
-                backgroundImage: NetworkImage(avatarImage),
-                radius: 14,
-              ),
-            ),
-          )
-        : PersistentBottomNavBarItem(
-            icon: const CircleAvatar(
-              backgroundImage: AssetImage('assets/blankprofile.png'),
-              radius: 14,
-            ),
-          );
   }
 }

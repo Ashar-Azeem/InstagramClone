@@ -43,7 +43,7 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Future<void> refresh() async {
-    var refreshUser = await db.getUser(user.userId, true) as Users;
+    var refreshUser = await db.getUser(user.userId) as Users;
     setState(() {
       user = refreshUser;
       PostsCollection().clear();
@@ -99,8 +99,7 @@ class _ProfileViewState extends State<ProfileView> {
                             setState(() {
                               loading = true;
                             });
-                            changePrivacy(user, db, PostsCollection().value)
-                                .then(
+                            changePrivacy(user, db).then(
                               (value) async {
                                 if (value == "success") {
                                   setState(() {
@@ -394,7 +393,7 @@ class _ProfileViewState extends State<ProfileView> {
                                           ),
                                         )),
                                     InkWell(
-                                        onTap: () {
+                                        onTap: () async {
                                           showMessage(context, "I Am Batman");
                                         },
                                         child: Container(

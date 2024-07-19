@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mysocialmediaapp/Views/SearchView.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
 
 class DataBase {
@@ -25,8 +26,8 @@ class DataBase {
   CollectionReference commentsCollection =
       FirebaseFirestore.instance.collection('comments');
 
-  DocumentReference publicPosts = FirebaseFirestore.instance
-      .collection('PublicPosts')
+  DocumentReference publicUsers = FirebaseFirestore.instance
+      .collection('PublicUsers')
       .doc('UniversalCategory');
 
   CollectionReference postCollection =
@@ -60,20 +61,6 @@ class DataBase {
     return suggestedPosts;
   }
 
-  Future<List<String>> getPublicPostsList() async {
-    DocumentSnapshot doc = await publicPosts.get();
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    List<String> publicPostsList = List<String>.from(data['Posts']);
-
-    return publicPostsList;
-  }
-
-  Future<void> updatePublicPostsList(List<String> newList) async {
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      transaction.update(publicPosts, {'Posts': newList});
-    });
-  }
-
   Future<Posts?> getPost(String postId) async {
     try {
       DocumentSnapshot doc = await postCollection.doc(postId).get();
@@ -90,11 +77,13 @@ class DataBase {
         int totalComments = data['totalComments'] as int;
         Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
         List<String> likesList = List<String>.from(data['likesList']);
+        bool isPrivate = data['isPrivate'] as bool;
 
         DateTime dartDate = firebaseDate.toDate();
 
         Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-            profileLoc, postLoc, content, dartDate, likesList);
+            profileLoc, postLoc, content, dartDate, likesList,
+            isPrivate: isPrivate);
 
         return post;
       }
@@ -104,6 +93,20 @@ class DataBase {
     }
 
     return null;
+  }
+
+  Future<void> maintainance() async {
+    var docs = await postCollection.get();
+
+    for (QueryDocumentSnapshot doc in docs.docs) {
+      DocumentReference ref = postCollection.doc(doc.id);
+      var post = getObject(doc);
+      if (['zain', 'Spiderman69', 'simba'].contains(post.userName)) {
+        ref.update({'isPrivate': true});
+      } else {
+        ref.update({'isPrivate': false});
+      }
+    }
   }
 
   Future<bool> deletePost(String postId, String loc) async {
@@ -221,25 +224,27 @@ class DataBase {
     }
   }
 
-  Future<void> changeAccountSecurity(Users user, List<Posts> posts) async {
+  Future<void> updatePrivacyInPosts(String userId, bool privacy) async {
+    try {
+      var docs = await postCollection.where('userId', isEqualTo: userId).get();
+      for (QueryDocumentSnapshot doc in docs.docs) {
+        DocumentReference ref = postCollection.doc(doc.id);
+        ref.update({'isPrivate': privacy});
+      }
+    } catch (e) {
+      //
+    }
+  }
+
+  Future<void> changeAccountSecurity(Users user) async {
     try {
       DocumentReference result = userCollection.doc(user.userId);
 
       if (user.isPrivate == false) {
-        List<String> publicList = await getPublicPostsList();
-        for (Posts post in posts) {
-          publicList.remove(post.postId);
-        }
-        await updatePublicPostsList(publicList);
+        await updatePrivacyInPosts(user.userId, true);
         await result.update({'privateAccount': true});
       } else if (user.isPrivate) {
-        List<String> publicList = await getPublicPostsList();
-        for (Posts post in posts) {
-          if (!publicList.contains(post.postId)) {
-            publicList.add(post.postId);
-          }
-        }
-        await updatePublicPostsList(publicList);
+        await updatePrivacyInPosts(user.userId, false);
         await result.update({'privateAccount': false});
       }
     } catch (e) {
@@ -292,8 +297,7 @@ class DataBase {
             f1: followers,
             f2: following,
             isPriv: isPrivate,
-            FCMtoken: token,
-            public: null);
+            FCMtoken: token);
         if (user.userId != FirebaseAuth.instance.currentUser!.uid) {
           users.add(user);
         }
@@ -520,15 +524,12 @@ class DataBase {
         'totalComments': totalComments,
         'uploadDateTime': fireStoreDate,
         'likesList': likesList,
+        'isPrivate': user.isPrivate
       });
       final post = Posts(doc.id, totalLikes, totalComments, userId, userName,
-          profileLoc, postLoc, content, currentDate, likesList);
+          profileLoc, postLoc, content, currentDate, likesList,
+          isPrivate: user.isPrivate);
 
-      if (!user.isPrivate) {
-        List<String> publicPosts = await getPublicPostsList();
-        publicPosts.add(doc.id);
-        await updatePublicPostsList(publicPosts);
-      }
       PostsCollection().addPost(post: post);
     } catch (e) {
       //
@@ -579,11 +580,13 @@ class DataBase {
         int totalComments = data['totalComments'] as int;
         Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
         List<String> likesList = List<String>.from(data['likesList']);
+        bool isPrivate = data['isPrivate'] as bool;
 
         DateTime dartDate = firebaseDate.toDate();
 
         Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-            profileLoc, postLoc, content, dartDate, likesList);
+            profileLoc, postLoc, content, dartDate, likesList,
+            isPrivate: isPrivate);
         posts.add(post);
 
         if (send) {
@@ -636,7 +639,7 @@ class DataBase {
     return stories;
   }
 
-  Future<Users?> getUser(String userId, bool getPublicPosts) async {
+  Future<Users?> getUser(String userId) async {
     try {
       DocumentSnapshot result = await userCollection.doc(userId).get();
       if (result.exists) {
@@ -651,34 +654,22 @@ class DataBase {
 
         Users user;
 
-        if (getPublicPosts) {
-          List<String> pulicPosts = await getPublicPostsList();
-          user = Users(
-              id: userId,
-              n: name,
-              un: userName,
-              loc: profileLocation,
-              f1: followers,
-              f2: following,
-              isPriv: isPrivate,
-              FCMtoken: token,
-              public: pulicPosts);
-        } else {
-          user = Users(
-              id: userId,
-              n: name,
-              un: userName,
-              loc: profileLocation,
-              f1: followers,
-              f2: following,
-              isPriv: isPrivate,
-              FCMtoken: token,
-              public: null);
-        }
+        user = Users(
+          id: userId,
+          n: name,
+          un: userName,
+          loc: profileLocation,
+          f1: followers,
+          f2: following,
+          isPriv: isPrivate,
+          FCMtoken: token,
+        );
 
         return user;
       }
-    } catch (e) {}
+    } catch (e) {
+      print(e);
+    }
     return null;
   }
 
@@ -741,7 +732,7 @@ class DataBase {
       required String storyImageLoc,
       required String? content}) async {
     try {
-      Users user = await getUser(userId, false) as Users;
+      Users user = await getUser(userId) as Users;
       DateTime currentDateTime = DateTime.now();
       DateTime finishDateTime = currentDateTime.add(const Duration(hours: 24));
       List<String> views = [];
@@ -1141,18 +1132,17 @@ class Users {
   late List<String> following;
   late bool isPrivate;
   late String token;
-  late List<String>? publicPosts;
 
-  Users(
-      {required String id,
-      required String n,
-      required String un,
-      required String? loc,
-      required List<String> f1,
-      required List<String> f2,
-      required bool isPriv,
-      required String FCMtoken,
-      required List<String>? public}) {
+  Users({
+    required String id,
+    required String n,
+    required String un,
+    required String? loc,
+    required List<String> f1,
+    required List<String> f2,
+    required bool isPriv,
+    required String FCMtoken,
+  }) {
     userId = id;
     name = n;
     userName = un;
@@ -1161,7 +1151,6 @@ class Users {
     following = f2;
     isPrivate = isPriv;
     token = FCMtoken;
-    publicPosts = public;
   }
 
   @override
@@ -1222,6 +1211,7 @@ class Posts {
   late String? content;
   late DateTime uploadDateTime;
   late List<String> likesList;
+  late bool isPrivate;
 
   Posts(
       this.postId,
@@ -1233,7 +1223,8 @@ class Posts {
       this.postLoc,
       this.content,
       this.uploadDateTime,
-      this.likesList);
+      this.likesList,
+      {required this.isPrivate});
 
   @override
   bool operator ==(Object other) =>

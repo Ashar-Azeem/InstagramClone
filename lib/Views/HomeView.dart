@@ -28,15 +28,19 @@ class _HomeViewState extends State<HomeView> {
   late List<bool> seeMore;
   late Users ownerUser;
   DataBase db = DataBase();
-  List<Posts> documents = [];
   List<Story> userStories = [];
   List<List<Story>> data = [];
+  bool planB = false;
 
   @override
   void initState() {
     super.initState();
     seeMore = List.filled(100, false);
     ownerUser = widget.user;
+
+    if (ownerUser.following.length > 30) {
+      planB = true;
+    }
   }
 
   List<Story> seperateOwnerUserStories(List<List<Story>> total) {
@@ -51,8 +55,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> refresh() async {
-    var user = await db.getUser(ownerUser.userId, true);
-    print('rebuilt');
+    var user = await db.getUser(ownerUser.userId);
     setState(() {
       ownerUser = user!;
       data.clear();
@@ -239,59 +242,66 @@ class _HomeViewState extends State<HomeView> {
                 ),
               ];
             },
-            body: ScaffoldMessenger(
-              child: RefreshIndicator(
-                color: Colors.white,
-                onRefresh: refresh,
-                child: Column(children: [
-                  FutureBuilder(
-                      future: DataBase().getStories(ownerUser),
-                      builder: (context, snapshot) {
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.done:
-                            {
-                              data = snapshot.data as List<List<Story>>;
+            body: RefreshIndicator(
+              color: Colors.white,
+              onRefresh: refresh,
+              child: Column(children: [
+                FutureBuilder(
+                    future: DataBase().getStories(ownerUser),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.done:
+                          {
+                            data = snapshot.data as List<List<Story>>;
 
-                              userStories = seperateOwnerUserStories(data);
+                            userStories = seperateOwnerUserStories(data);
 
-                              return Expanded(
-                                child: ListView(children: [
-                                  Padding(
-                                      padding:
-                                          EdgeInsets.only(top: 5, bottom: 2.h),
-                                      child: StoriesRow(
-                                          data: data,
-                                          userStories: userStories,
-                                          ownerUser: ownerUser)),
-                                  FirestorePagination(
-                                      isLive: true,
-                                      shrinkWrap: true,
-                                      viewType: ViewType.list,
-                                      onEmpty: const Text('No Posts Available'),
-                                      initialLoader: const SizedBox.shrink(),
-                                      bottomLoader: const Center(
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
+                            return Expanded(
+                              child: ListView(children: [
+                                Padding(
+                                    padding:
+                                        EdgeInsets.only(top: 5, bottom: 2.h),
+                                    child: StoriesRow(
+                                        data: data,
+                                        userStories: userStories,
+                                        ownerUser: ownerUser)),
+                                FirestorePagination(
+                                    isLive: true,
+                                    shrinkWrap: true,
+                                    viewType: ViewType.list,
+                                    onEmpty: const Text('No Posts Available'),
+                                    initialLoader: const SizedBox.shrink(),
+                                    bottomLoader: const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
                                       ),
-                                      limit: 12,
-                                      query: ownerUser.following.isNotEmpty
-                                          ? FirebaseFirestore.instance
-                                              .collection('posts')
-                                              .where('userId',
-                                                  whereIn: ownerUser.following)
-                                              .orderBy('uploadDateTime',
-                                                  descending: true)
-                                          : FirebaseFirestore.instance
-                                              .collection('posts')
-                                              .orderBy('uploadDateTime',
-                                                  descending: true)
-                                              .where(FieldPath.documentId,
-                                                  whereIn:
-                                                      ownerUser.publicPosts!),
-                                      itemBuilder: (context, snapshot, index) {
-                                        var post = getObject(snapshot);
+                                    ),
+                                    limit: 12,
+                                    query: ownerUser.following.isNotEmpty
+                                        ? (planB
+                                            ? FirebaseFirestore.instance
+                                                .collection('posts')
+                                                .orderBy('uploadDateTime',
+                                                    descending: true)
+                                            : FirebaseFirestore.instance
+                                                .collection('posts')
+                                                .where('userId',
+                                                    whereIn:
+                                                        ownerUser.following)
+                                                .orderBy('uploadDateTime',
+                                                    descending: true))
+                                        : FirebaseFirestore.instance
+                                            .collection('posts')
+                                            .orderBy('uploadDateTime',
+                                                descending: true)
+                                            .where('isPrivate',
+                                                isEqualTo: false),
+                                    itemBuilder: (context, snapshot, index) {
+                                      var post = getObject(snapshot);
+                                      if (ownerUser.following.isEmpty ||
+                                          ownerUser.following
+                                              .contains(post.userId)) {
                                         return Padding(
                                           padding: const EdgeInsets.only(
                                               left: 6, right: 6),
@@ -306,22 +316,24 @@ class _HomeViewState extends State<HomeView> {
                                             stories: data,
                                           ),
                                         );
-                                      })
-                                ]),
-                              );
-                            }
-
-                          default:
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
+                                      } else {
+                                        return const SizedBox.shrink();
+                                      }
+                                    })
+                              ]),
                             );
-                        }
-                      }),
-                ]),
-              ),
+                          }
+
+                        default:
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          );
+                      }
+                    }),
+              ]),
             ),
           ),
         ),
@@ -342,11 +354,12 @@ Posts getObject(DocumentSnapshot snapshot) {
   int totalComments = data['totalComments'] as int;
   Timestamp firebaseDate = data['uploadDateTime'] as Timestamp;
   List<String> likesList = List<String>.from(data['likesList']);
-
+  bool isPrivate = data['isPrivate'] as bool;
   DateTime dartDate = firebaseDate.toDate();
 
   Posts post = Posts(postId, totalLikes, totalComments, userId, userName,
-      profileLoc, postLoc, content, dartDate, likesList);
+      profileLoc, postLoc, content, dartDate, likesList,
+      isPrivate: isPrivate);
 
   return post;
 }

@@ -135,15 +135,15 @@ Users getObject(DocumentSnapshot snapshot) {
   bool isPrivate = data['privateAccount'] as bool;
   String token = data['token'];
   Users user = Users(
-      id: snapshot.id,
-      n: name,
-      un: userName,
-      loc: profileLocation,
-      f1: followers,
-      f2: following,
-      isPriv: isPrivate,
-      FCMtoken: token,
-      public: null);
+    id: snapshot.id,
+    n: name,
+    un: userName,
+    loc: profileLocation,
+    f1: followers,
+    f2: following,
+    isPriv: isPrivate,
+    FCMtoken: token,
+  );
 
   return user;
 }

@@ -10,6 +10,7 @@ import 'package:mysocialmediaapp/utilities/heartAnimation.dart';
 import 'package:mysocialmediaapp/utilities/shareModalSheet.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
+import 'package:sizer/sizer.dart';
 
 class ViewPost extends StatefulWidget {
   final Users user;
@@ -112,366 +113,401 @@ class _ViewPostState extends State<ViewPost> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 48.0,
-                                      height: 48.0,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.white, // Border color
-                                            width: 1.0, // Border width
-                                          )),
-                                      child: posts[index].profLoc == null
-                                          ? const CircleAvatar(
-                                              backgroundColor: Colors.black,
-                                              backgroundImage: AssetImage(
-                                                  'assets/blankprofile.png'),
-                                              radius: 30,
-                                            )
-                                          : CircleAvatar(
-                                              backgroundColor: Colors.black,
-                                              backgroundImage: NetworkImage(
-                                                  posts[index].profLoc!),
-                                              radius: 30,
-                                            ),
-                                    ),
-                                    personalCheck
-                                        ? Text(
-                                            "  ${posts[index].userName}",
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w500),
-                                          )
-                                        : TextButton(
-                                            onPressed: () async {
-                                              if (posts[index].userId ==
-                                                  user.userId) {
-                                                return;
-                                              }
-                                              Users newuser = await DataBase()
-                                                  .getUser(posts[index].userId,
-                                                      false) as Users;
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          VisitingProfileView(
-                                                            user: newuser,
-                                                            ownerUser:
-                                                                widget.user,
-                                                            rebuilt:
-                                                                widget.rebuilt,
-                                                          )));
-                                            },
-                                            child: Text(
-                                                "  ${posts[index].userName}",
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                        FontWeight.w500)))
-                                  ],
-                                ),
-                                AuthService().getUser()!.uid ==
-                                        posts[index].userId
-                                    ? PopupMenuButton<String>(
-                                        color: Colors.white,
-                                        onSelected: (String result) async {
-                                          setState(() {
-                                            loading = true;
-                                          });
-                                          if (result == 'delete') {
-                                            DataBase()
-                                                .deletePost(posts[index].postId,
-                                                    posts[index].postLoc)
-                                                .then((value) {
-                                              setState(() {
-                                                loading = false;
-                                              });
-                                              if (value == true) {
-                                                PostsCollection().removePost(
-                                                    post: posts[index]);
-
-                                                setState(() {
-                                                  posts.removeAt(index);
-                                                });
-                                              }
-                                            });
-                                          }
-                                        },
-                                        itemBuilder: (context) {
-                                          return <PopupMenuEntry<String>>[
-                                            const PopupMenuItem(
-                                              value: "delete",
-                                              child: ListTile(
-                                                  leading: Icon(
-                                                    Icons.delete,
-                                                    color: Colors.black,
-                                                  ),
-                                                  title: Text(
-                                                    'Delete',
-                                                    style: TextStyle(
-                                                        color: Colors.black),
-                                                  )),
-                                            ),
-                                          ];
-                                        },
-                                      )
-                                    : Padding(
-                                        padding: EdgeInsets.only(
-                                            right: (screenWidth / 100) * 3.5),
-                                        child: InkWell(
-                                            onTap: () async {
-                                              DataBase db = DataBase();
-                                              Users otherUser =
-                                                  await db.getUser(
-                                                      posts[index].userId,
-                                                      false) as Users;
-                                              if (widget.user.following
-                                                  .contains(
-                                                      posts[index].userId)) {
-                                                removeRelationship(otherUser,
-                                                        widget.user, db)
-                                                    .then((value) {
-                                                  if (value) {
-                                                    setState(() {
-                                                      //Updates the UI
-                                                    });
-                                                  }
-                                                });
-                                              } else {
-                                                addRelationship(otherUser,
-                                                        widget.user, db)
-                                                    .then((value) {
-                                                  if (value) {
-                                                    setState(() {
-                                                      //updates the UI
-                                                    });
-                                                  }
-                                                });
-                                              }
-                                            },
-                                            child: Container(
-                                              height: 33,
-                                              width: 110,
-                                              decoration: BoxDecoration(
-                                                color: mobileBackgroundColor,
-                                                border: Border.all(
-                                                    color: Colors.white),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              child: Center(
-                                                  child: widget.user.following
-                                                          .contains(posts[index]
-                                                              .userId)
-                                                      ? const Text(
-                                                          "Following",
-                                                          style: TextStyle(
-                                                              fontSize: 15,
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        )
-                                                      : const Text(
-                                                          "Follow",
-                                                          style: TextStyle(
-                                                              fontSize: 15,
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        )),
-                                            )),
-                                      ),
-                              ]),
                           Padding(
-                            padding: const EdgeInsets.only(top: 7),
-                            child: GestureDetector(
-                              child:
-                                  Stack(alignment: Alignment.center, children: [
-                                Container(
-                                    width: screenWidth,
-                                    height: screenHeight - 380,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(0),
-                                      image: DecorationImage(
-                                        image:
-                                            NetworkImage(posts[index].postLoc),
-                                        fit: BoxFit.cover,
+                            padding: EdgeInsets.only(bottom: 1.h),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 48.0,
+                                        height: 48.0,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color:
+                                                  Colors.white, // Border color
+                                              width: 1.0, // Border width
+                                            )),
+                                        child: posts[index].profLoc == null
+                                            ? const CircleAvatar(
+                                                backgroundColor: Colors.black,
+                                                backgroundImage: AssetImage(
+                                                    'assets/blankprofile.png'),
+                                                radius: 30,
+                                              )
+                                            : CircleAvatar(
+                                                backgroundColor: Colors.black,
+                                                backgroundImage: NetworkImage(
+                                                    posts[index].profLoc!),
+                                                radius: 30,
+                                              ),
                                       ),
-                                    )),
-                                Opacity(
-                                  opacity: isHeartAnimating ? 1 : 0,
-                                  child: HeartAnimationWidget(
-                                      isAnimating: isHeartAnimating,
-                                      duration:
-                                          const Duration(milliseconds: 750),
-                                      onEnd: () {
-                                        setState(() {
-                                          isHeartAnimating = false;
-                                        });
-                                      },
-                                      child: const Icon(
-                                        Icons.favorite,
-                                        color: Colors.white,
-                                        size: 100,
-                                      )),
-                                )
-                              ]),
-                              onDoubleTap: () async {
-                                setState(() {
-                                  isHeartAnimating = true;
-                                  if (!isLiked) {
-                                    posts[index].totalLikes += 1;
-                                    posts[index].likesList.add(user.userId);
-                                  }
-                                });
-                                if (!isLiked) {
-                                  count[index]++;
+                                      personalCheck
+                                          ? Text(
+                                              "  ${posts[index].userName}",
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w500),
+                                            )
+                                          : InkWell(
+                                              onTap: () async {
+                                                if (posts[index].userId ==
+                                                    user.userId) {
+                                                  return;
+                                                }
+                                                Users newuser = await DataBase()
+                                                        .getUser(
+                                                            posts[index].userId)
+                                                    as Users;
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            VisitingProfileView(
+                                                              user: newuser,
+                                                              ownerUser:
+                                                                  widget.user,
+                                                              rebuilt: widget
+                                                                  .rebuilt,
+                                                            )));
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    EdgeInsets.only(top: 2.h),
+                                                child: SizedBox(
+                                                  height: 10.w,
+                                                  child: Text(
+                                                      "  ${posts[index].userName}",
+                                                      style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w500)),
+                                                ),
+                                              )),
+                                      posts[index].userName == 'ashar' ||
+                                              posts[index].userName == 'vaneeza'
+                                          ? Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 2.w),
+                                              child: const Icon(
+                                                Icons.verified,
+                                                color: blueColor,
+                                                size: 15,
+                                              ),
+                                            )
+                                          : const SizedBox.shrink(),
+                                    ],
+                                  ),
+                                  AuthService().getUser()!.uid ==
+                                          posts[index].userId
+                                      ? PopupMenuButton<String>(
+                                          color: Colors.white,
+                                          onSelected: (String result) async {
+                                            setState(() {
+                                              loading = true;
+                                            });
+                                            if (result == 'delete') {
+                                              DataBase()
+                                                  .deletePost(
+                                                      posts[index].postId,
+                                                      posts[index].postLoc)
+                                                  .then((value) {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                if (value == true) {
+                                                  PostsCollection().removePost(
+                                                      post: posts[index]);
 
-                                  if (count[index] <= 3) {
-                                    DataBase().addLike(posts[index], user);
-                                    if (count[index] <= 1) {
-                                      sendLikeNotification(user, posts[index]);
-                                    }
-                                  }
-                                  isLiked = true;
-                                  if (widget.rebuilt != null) {
-                                    await widget.rebuilt!();
+                                                  setState(() {
+                                                    posts.removeAt(index);
+                                                  });
+                                                }
+                                              });
+                                            }
+                                          },
+                                          itemBuilder: (context) {
+                                            return <PopupMenuEntry<String>>[
+                                              const PopupMenuItem(
+                                                value: "delete",
+                                                child: ListTile(
+                                                    leading: Icon(
+                                                      Icons.delete,
+                                                      color: Colors.black,
+                                                    ),
+                                                    title: Text(
+                                                      'Delete',
+                                                      style: TextStyle(
+                                                          color: Colors.black),
+                                                    )),
+                                              ),
+                                            ];
+                                          },
+                                        )
+                                      : Padding(
+                                          padding: EdgeInsets.only(
+                                              right: (screenWidth / 100) * 3.5),
+                                          child: InkWell(
+                                              onTap: () async {
+                                                DataBase db = DataBase();
+                                                Users otherUser =
+                                                    await db.getUser(
+                                                            posts[index].userId)
+                                                        as Users;
+                                                if (widget.user.following
+                                                    .contains(
+                                                        posts[index].userId)) {
+                                                  removeRelationship(otherUser,
+                                                          widget.user, db)
+                                                      .then((value) {
+                                                    if (value) {
+                                                      setState(() {
+                                                        //Updates the UI
+                                                      });
+                                                    }
+                                                  });
+                                                } else {
+                                                  addRelationship(otherUser,
+                                                          widget.user, db)
+                                                      .then((value) {
+                                                    if (value) {
+                                                      setState(() {
+                                                        //updates the UI
+                                                      });
+                                                    }
+                                                  });
+                                                }
+                                              },
+                                              child: Container(
+                                                height: 33,
+                                                width: 110,
+                                                decoration: BoxDecoration(
+                                                  color: mobileBackgroundColor,
+                                                  border: Border.all(
+                                                      color: Colors.white),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0),
+                                                ),
+                                                child: Center(
+                                                    child: widget.user.following
+                                                            .contains(
+                                                                posts[index]
+                                                                    .userId)
+                                                        ? const Text(
+                                                            "Following",
+                                                            style: TextStyle(
+                                                                fontSize: 15,
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        : const Text(
+                                                            "Follow",
+                                                            style: TextStyle(
+                                                                fontSize: 15,
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )),
+                                              )),
+                                        ),
+                                ]),
+                          ),
+                          const Divider(
+                            height: 0.5,
+                            thickness: 0.5,
+                            indent: null,
+                            endIndent: null,
+                            color: Colors.white,
+                          ),
+                          GestureDetector(
+                            child:
+                                Stack(alignment: Alignment.center, children: [
+                              Container(
+                                  width: screenWidth,
+                                  height: screenHeight - 380,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(0),
+                                    image: DecorationImage(
+                                      image: NetworkImage(posts[index].postLoc),
+                                      fit: BoxFit.fitWidth,
+                                    ),
+                                  )),
+                              Opacity(
+                                opacity: isHeartAnimating ? 1 : 0,
+                                child: HeartAnimationWidget(
+                                    isAnimating: isHeartAnimating,
+                                    duration: const Duration(milliseconds: 750),
+                                    onEnd: () {
+                                      setState(() {
+                                        isHeartAnimating = false;
+                                      });
+                                    },
+                                    child: const Icon(
+                                      Icons.favorite,
+                                      color: Colors.white,
+                                      size: 100,
+                                    )),
+                              )
+                            ]),
+                            onDoubleTap: () async {
+                              setState(() {
+                                isHeartAnimating = true;
+                                if (!isLiked) {
+                                  posts[index].totalLikes += 1;
+                                  posts[index].likesList.add(user.userId);
+                                }
+                              });
+                              if (!isLiked) {
+                                count[index]++;
+
+                                if (count[index] <= 3) {
+                                  DataBase().addLike(posts[index], user);
+                                  if (count[index] <= 1) {
+                                    sendLikeNotification(user, posts[index]);
                                   }
                                 }
-                              },
-                            ),
+                                isLiked = true;
+                                if (widget.rebuilt != null) {
+                                  await widget.rebuilt!();
+                                }
+                              }
+                            },
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      IconButton(
-                                          onPressed: () async {
-                                            count[index]++;
-                                            if (posts[index]
-                                                .likesList
-                                                .contains(user.userId)) {
-                                              setState(() {
-                                                isLiked = false;
-                                                posts[index]
-                                                    .likesList
-                                                    .remove(user.userId);
-                                                posts[index].totalLikes -= 1;
-                                              });
-                                              if (count[index] <= 3) {
-                                                DataBase().removeLike(
-                                                    posts[index], user);
-                                                DataBase().deleteNotification(
-                                                    posts[index],
-                                                    user,
-                                                    null,
-                                                    true,
-                                                    false,
-                                                    false);
-                                              }
-                                            } else {
-                                              setState(() {
-                                                isHeartAnimating = true;
-                                                isLiked = true;
-                                                posts[index]
-                                                    .likesList
-                                                    .add(user.userId);
-                                                posts[index].totalLikes += 1;
-                                              });
-                                              if (count[index] <= 3) {
-                                                DataBase().addLike(
-                                                    posts[index], user);
-
-                                                if (count[index] <= 1) {
-                                                  sendLikeNotification(
-                                                      user, posts[index]);
-                                                }
-                                              }
-                                            }
-                                            if (widget.rebuilt != null) {
-                                              await widget.rebuilt!();
-                                            }
-                                          },
-                                          icon: posts[index]
+                          const Divider(
+                            height: 0.5,
+                            thickness: 0.5,
+                            indent: null,
+                            endIndent: null,
+                            color: Colors.white,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    IconButton(
+                                        onPressed: () async {
+                                          count[index]++;
+                                          if (posts[index]
+                                              .likesList
+                                              .contains(user.userId)) {
+                                            setState(() {
+                                              isLiked = false;
+                                              posts[index]
                                                   .likesList
-                                                  .contains(user.userId)
-                                              ? const Icon(
-                                                  Icons.favorite,
-                                                  size: 32,
-                                                  color: Color.fromARGB(
-                                                      255, 230, 29, 15),
-                                                )
-                                              : const Icon(
-                                                  Icons
-                                                      .favorite_border_outlined,
-                                                  size: 32,
-                                                  color: Colors.white,
-                                                )),
-                                      IconButton(
-                                          onPressed: () {
-                                            showModalBottomSheet(
-                                              isScrollControlled: true,
-                                              useRootNavigator: true,
-                                              backgroundColor:
-                                                  const Color.fromARGB(
-                                                      255, 34, 38, 41),
-                                              context: context,
-                                              builder: (context) {
-                                                return CustomBottomSheet(
-                                                  screenHeight: screenHeight,
-                                                  screenWidth: screenWidth,
+                                                  .remove(user.userId);
+                                              posts[index].totalLikes -= 1;
+                                            });
+                                            if (count[index] <= 3) {
+                                              DataBase().removeLike(
+                                                  posts[index], user);
+                                              DataBase().deleteNotification(
+                                                  posts[index],
+                                                  user,
+                                                  null,
+                                                  true,
+                                                  false,
+                                                  false);
+                                            }
+                                          } else {
+                                            setState(() {
+                                              isHeartAnimating = true;
+                                              isLiked = true;
+                                              posts[index]
+                                                  .likesList
+                                                  .add(user.userId);
+                                              posts[index].totalLikes += 1;
+                                            });
+                                            if (count[index] <= 3) {
+                                              DataBase()
+                                                  .addLike(posts[index], user);
+
+                                              if (count[index] <= 1) {
+                                                sendLikeNotification(
+                                                    user, posts[index]);
+                                              }
+                                            }
+                                          }
+                                          if (widget.rebuilt != null) {
+                                            await widget.rebuilt!();
+                                          }
+                                        },
+                                        icon: posts[index]
+                                                .likesList
+                                                .contains(user.userId)
+                                            ? const Icon(
+                                                Icons.favorite,
+                                                size: 32,
+                                                color: Color.fromARGB(
+                                                    255, 230, 29, 15),
+                                              )
+                                            : const Icon(
+                                                Icons.favorite_border_outlined,
+                                                size: 32,
+                                                color: Colors.white,
+                                              )),
+                                    IconButton(
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            isScrollControlled: true,
+                                            useRootNavigator: true,
+                                            backgroundColor:
+                                                const Color.fromARGB(
+                                                    255, 34, 38, 41),
+                                            context: context,
+                                            builder: (context) {
+                                              return CustomBottomSheet(
+                                                screenHeight: screenHeight,
+                                                screenWidth: screenWidth,
+                                                ownerUser: user,
+                                                post: posts[index],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.mode_comment_outlined,
+                                          color: Colors.white,
+                                          size: 30,
+                                        )),
+                                    IconButton(
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            useSafeArea: false,
+                                            showDragHandle: true,
+                                            isScrollControlled: true,
+                                            useRootNavigator: true,
+                                            backgroundColor:
+                                                const Color.fromARGB(
+                                                    255, 34, 38, 41),
+                                            context: context,
+                                            builder: (context) {
+                                              return ShareBottomSheet(
                                                   ownerUser: user,
-                                                  post: posts[index],
-                                                );
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.mode_comment_outlined,
-                                            color: Colors.white,
-                                            size: 30,
-                                          )),
-                                      IconButton(
-                                          onPressed: () {
-                                            showModalBottomSheet(
-                                              useSafeArea: false,
-                                              showDragHandle: true,
-                                              isScrollControlled: true,
-                                              useRootNavigator: true,
-                                              backgroundColor:
-                                                  const Color.fromARGB(
-                                                      255, 34, 38, 41),
-                                              context: context,
-                                              builder: (context) {
-                                                return ShareBottomSheet(
-                                                    ownerUser: user,
-                                                    post: posts[index]);
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.send,
-                                            color: Colors.white,
-                                            size: 30,
-                                          ))
-                                    ]),
-                              ],
-                            ),
+                                                  post: posts[index]);
+                                            },
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.send,
+                                          color: Colors.white,
+                                          size: 30,
+                                        ))
+                                  ]),
+                            ],
                           ),
                           Row(
                               mainAxisAlignment: MainAxisAlignment.start,

@@ -6,6 +6,7 @@ import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
 import 'package:mysocialmediaapp/utilities/state.dart';
 import 'package:mysocialmediaapp/utilities/utilities.dart';
+import 'package:sizer/sizer.dart';
 
 class AddPostView extends StatefulWidget {
   final Users user;
@@ -86,56 +87,62 @@ class _AddPostViewState extends State<AddPostView>
           ],
         ),
         body: itemSelected == true
-            ? Column(
-                children: [
-                  if (loading == true)
-                    const LinearProgressIndicator(
-                      color: blueColor,
-                    ),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 30),
-                      child: Container(
-                          height: 230,
-                          width: 200,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            image: DecorationImage(
-                              image: MemoryImage(post!),
-                              fit: BoxFit.cover,
-                            ),
-                          )),
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(top: 20, left: 10, right: 10),
-                    child: TextField(
-                      controller: content,
-                      cursorColor: Colors.white,
-                      maxLines: 3,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(130),
-                      ],
-                      decoration: InputDecoration(
-                          labelText: 'Enter your text',
-                          labelStyle: const TextStyle(color: Colors.white),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.white),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          filled: true,
-                          fillColor: Colors.black),
-                      style: const TextStyle(
-                        fontSize: 15.0,
-                        color: Colors.white,
+            ? SingleChildScrollView(
+                child: Column(
+                  children: [
+                    if (loading == true)
+                      const LinearProgressIndicator(
+                        color: blueColor,
+                      ),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 30),
+                        child: Container(
+                            height: 36.h,
+                            width: 66.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                              image: DecorationImage(
+                                image: MemoryImage(post!),
+                                fit: BoxFit.contain,
+                              ),
+                            )),
                       ),
                     ),
-                  )
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 20,
+                        left: 10,
+                        right: 10,
+                      ),
+                      child: TextField(
+                        controller: content,
+                        cursorColor: Colors.white,
+                        maxLines: 3,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(130),
+                        ],
+                        decoration: InputDecoration(
+                            labelText: 'Enter your text',
+                            labelStyle: const TextStyle(color: Colors.white),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(color: Colors.white),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            filled: true,
+                            fillColor: Colors.black),
+                        style: const TextStyle(
+                          fontSize: 15.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               )
             : Center(
                 child: IconButton(

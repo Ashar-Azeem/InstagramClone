@@ -181,7 +181,7 @@ class _AddStoryViewState extends State<AddStoryView> {
                                               BorderRadius.circular(5),
                                           image: DecorationImage(
                                             image: MemoryImage(story!),
-                                            fit: BoxFit.cover,
+                                            fit: BoxFit.contain,
                                           ),
                                         )),
                                     Padding(

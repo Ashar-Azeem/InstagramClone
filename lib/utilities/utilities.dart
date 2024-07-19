@@ -141,7 +141,7 @@ Future<void> sendLikeNotification(Users ownerUser, Posts post) async {
   if (ownerUser.userId == post.userId) {
     return;
   }
-  Users otherUser = await DataBase().getUser(post.userId, false) as Users;
+  Users otherUser = await DataBase().getUser(post.userId) as Users;
   String data = "${ownerUser.userName} liked your picture";
   Notifications notification = Notifications(
       receiverId: post.userId,
@@ -165,7 +165,7 @@ Future<void> sendCommentNotification(
   if (ownerUser.userId == post.userId) {
     return;
   }
-  Users otherUser = await DataBase().getUser(post.userId, false) as Users;
+  Users otherUser = await DataBase().getUser(post.userId) as Users;
   String data = "${ownerUser.userName} commented on your picture";
   Notifications notification = Notifications(
       receiverId: post.userId,

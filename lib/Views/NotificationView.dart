@@ -236,8 +236,8 @@ class _NotificationViewState extends State<NotificationView> {
                   } else if (notification.isFollowerNotification) {
                     return InkWell(
                       onTap: () async {
-                        var newuser = await DataBase()
-                            .getUser(notification.senderId, false);
+                        var newuser =
+                            await DataBase().getUser(notification.senderId);
                         PersistentNavBarNavigator.pushNewScreen(context,
                             screen: (VisitingProfileView(
                                 user: newuser!,
@@ -302,8 +302,8 @@ class _NotificationViewState extends State<NotificationView> {
                   } else {
                     return InkWell(
                       onTap: () async {
-                        var newuser = await DataBase()
-                            .getUser(notification.senderId, false);
+                        var newuser =
+                            await DataBase().getUser(notification.senderId);
                         PersistentNavBarNavigator.pushNewScreen(context,
                             screen: (VisitingProfileView(
                                 user: newuser!,
@@ -365,7 +365,7 @@ class _NotificationViewState extends State<NotificationView> {
                             InkWell(
                               onTap: () async {
                                 var newuser = await DataBase()
-                                    .getUser(notification.senderId, false);
+                                    .getUser(notification.senderId);
 
                                 await confirmingARequest(user, newuser!);
                               },
@@ -393,7 +393,7 @@ class _NotificationViewState extends State<NotificationView> {
                               child: InkWell(
                                 onTap: () async {
                                   var newuser = await DataBase()
-                                      .getUser(notification.senderId, false);
+                                      .getUser(notification.senderId);
 
                                   DataBase().deleteNotification(
                                       null, newuser!, user, false, false, true);

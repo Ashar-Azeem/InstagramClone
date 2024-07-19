@@ -31,18 +31,8 @@ Future<String?> registrationBackEnd(String e, String p, String n, String u,
     } else {
       await showErrorDialog(context, 'UserName Already exists');
     }
-  } on UserNotFoundAuthException {
-    await showErrorDialog(context, 'User not found');
-  } on WrongPasswordAuthException {
-    await showErrorDialog(context, 'Incorrect password  ');
-  } on GenericAuthException {
-    await showErrorDialog(context, 'Authentication error');
-  } on EmailAlreadyInUseAuthException {
-    await showErrorDialog(context, 'Email already in use');
-  } on InvalidEmailAuthException {
-    await showErrorDialog(context, 'Invalid Email');
-  } catch (_) {
-    await showErrorDialog(context, 'Unknown Error');
+  } catch (e) {
+    showErrorDialog(context, e.toString());
   }
   return null;
 }
@@ -86,7 +76,7 @@ Future<Users?> updatePorfileProcess(
   try {
     profilePicture = await compressImage(profilePicture);
     await DataBase().updateProfilePicture(user, profilePicture);
-    final user1 = await DataBase().getUser(user.userId, false);
+    final user1 = await DataBase().getUser(user.userId);
     return user1;
   } catch (e) {
     //
@@ -94,10 +84,10 @@ Future<Users?> updatePorfileProcess(
   return null;
 }
 
-Future<String> changePrivacy(Users user, DataBase db, List<Posts> posts) async {
+Future<String> changePrivacy(Users user, DataBase db) async {
   try {
-    await db.changeAccountSecurity(user, posts);
-    print('success');
+    await db.changeAccountSecurity(user);
+
     return "success";
   } catch (e) {
     //

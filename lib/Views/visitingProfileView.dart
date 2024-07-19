@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mysocialmediaapp/services/CRUD.dart';
 import 'package:mysocialmediaapp/utilities/VisitingProfileViewItems.dart';
 import 'package:mysocialmediaapp/utilities/color.dart';
+import 'package:sizer/sizer.dart';
 
 class VisitingProfileView extends StatefulWidget {
   final Users ownerUser;
@@ -38,10 +39,27 @@ class _VisitingProfileViewState extends State<VisitingProfileView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: mobileBackgroundColor,
-        title: Text(
-          user.userName,
-          style: const TextStyle(
-              fontSize: 21, fontWeight: FontWeight.bold, color: Colors.white),
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              user.userName,
+              style: const TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+            user.userName == 'ashar' || user.userName == 'vaneeza'
+                ? Padding(
+                    padding: EdgeInsets.only(left: 2.w),
+                    child: const Icon(
+                      Icons.verified,
+                      color: Colors.blue,
+                      size: 15,
+                    ),
+                  )
+                : const SizedBox.shrink()
+          ],
         ),
       ),
       body: SafeArea(
