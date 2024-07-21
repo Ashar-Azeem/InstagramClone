@@ -262,7 +262,21 @@ class _FollowersAndFollowingViewState extends State<FollowersAndFollowingView> {
                                           : InkWell(
                                               onTap: () async {
                                                 var db = DataBase();
-                                                if (!user.following
+                                                if (fUser.isPrivate) {
+                                                  PersistentNavBarNavigator
+                                                      .pushNewScreen(
+                                                    context,
+                                                    screen:
+                                                        (VisitingProfileView(
+                                                            user: fUser,
+                                                            ownerUser: user,
+                                                            rebuilt: null)),
+                                                    withNavBar: true,
+                                                    pageTransitionAnimation:
+                                                        PageTransitionAnimation
+                                                            .cupertino,
+                                                  );
+                                                } else if (!user.following
                                                     .contains(fUser.userId)) {
                                                   await addRelationship(
                                                       fUser, user, db);

@@ -30,7 +30,7 @@ class _ChatViewState extends State<ChatView> {
   Messages? currentMessage;
   late Users ownerUser;
   Messages? previousMessage;
-  int maxLines = 1;
+  int maxLines = 3;
   bool loading = false;
   late Chats chat;
   int userNumber = 1;
@@ -59,20 +59,6 @@ class _ChatViewState extends State<ChatView> {
       var temp3 = chat.user1ProfileLoc;
       chat.user1ProfileLoc = chat.user2ProfileLoc;
       chat.user2ProfileLoc = temp3;
-    }
-    controller.addListener(_updateMaxLines);
-  }
-
-  void _updateMaxLines() {
-    final lines = '\n'.allMatches(controller.text).length + 1;
-    if (lines > maxLines && lines <= 3) {
-      setState(() {
-        maxLines = lines;
-      });
-    } else if (lines < maxLines && lines > 0) {
-      setState(() {
-        maxLines = lines;
-      });
     }
   }
 
@@ -741,13 +727,12 @@ class _ChatViewState extends State<ChatView> {
                       color: const Color.fromARGB(255, 36, 38, 44)),
                   alignment: Alignment.center,
                   width: 96.w,
-                  height: maxLines * 6.3.h,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(left: 1.w),
+                        padding: EdgeInsets.all(1.w),
                         child: ValueListenableBuilder(
                             valueListenable: ProfilePicture(),
                             builder: (context, value, child) {
@@ -771,13 +756,16 @@ class _ChatViewState extends State<ChatView> {
                         child: SizedBox(
                           width: 62.w,
                           child: TextField(
-                            maxLines: null,
+                            maxLines: 5,
                             expands: false,
                             minLines: 1,
                             cursorColor: Colors.white,
                             style:
                                 const TextStyle(fontWeight: FontWeight.normal),
                             controller: controller,
+                            onTap: () {
+                              setState(() {});
+                            },
                             autocorrect: false,
                             enableSuggestions: true,
                             decoration: const InputDecoration(

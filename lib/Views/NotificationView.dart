@@ -21,6 +21,8 @@ class NotificationView extends StatefulWidget {
 }
 
 class _NotificationViewState extends State<NotificationView> {
+  bool confirmLoading = false;
+  bool deleteLoading = false;
   late Users user;
   @override
   void initState() {
@@ -364,10 +366,16 @@ class _NotificationViewState extends State<NotificationView> {
                             ),
                             InkWell(
                               onTap: () async {
+                                setState(() {
+                                  confirmLoading = true;
+                                });
                                 var newuser = await DataBase()
                                     .getUser(notification.senderId);
 
                                 await confirmingARequest(user, newuser!);
+                                setState(() {
+                                  confirmLoading = false;
+                                });
                               },
                               child: Container(
                                 height: 10.w,
@@ -377,14 +385,25 @@ class _NotificationViewState extends State<NotificationView> {
                                   border: Border.all(color: Colors.black),
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
-                                child: const Center(
-                                  child: Text(
-                                    'Confirm',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                                child: Center(
+                                  child: confirmLoading
+                                      ? SizedBox(
+                                          height: 5.w,
+                                          width: 5.w,
+                                          child:
+                                              const CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.blue,
+                                            strokeCap: StrokeCap.round,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Confirm',
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold),
+                                        ),
                                 ),
                               ),
                             ),
@@ -392,11 +411,18 @@ class _NotificationViewState extends State<NotificationView> {
                               padding: EdgeInsets.only(left: 2.w),
                               child: InkWell(
                                 onTap: () async {
+                                  setState(() {
+                                    deleteLoading = true;
+                                  });
                                   var newuser = await DataBase()
                                       .getUser(notification.senderId);
 
                                   DataBase().deleteNotification(
                                       null, newuser!, user, false, false, true);
+
+                                  setState(() {
+                                    deleteLoading = false;
+                                  });
                                 },
                                 child: Container(
                                   height: 10.w,
@@ -408,14 +434,25 @@ class _NotificationViewState extends State<NotificationView> {
                                         Border.all(color: Colors.transparent),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
-                                  child: const Center(
-                                    child: Text(
-                                      'Delete',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                                  child: Center(
+                                    child: deleteLoading
+                                        ? SizedBox(
+                                            height: 5.w,
+                                            width: 5.w,
+                                            child:
+                                                const CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                              strokeCap: StrokeCap.round,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Delete',
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                   ),
                                 ),
                               ),

@@ -150,13 +150,20 @@ class _VisitingProfileViewItemsState extends State<VisitingProfileViewItems> {
             ),
             InkWell(
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => FollowersAndFollowingView(
-                            user: ownerUser,
-                            visitingUser: user,
-                            choice: 'followers')));
+                if (ownerUser.following.contains(user.userId) ||
+                    !user.isPrivate) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FollowersAndFollowingView(
+                              user: ownerUser,
+                              visitingUser: user,
+                              choice: 'followers')));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      duration: Duration(seconds: 2),
+                      content: Text('Account is private!')));
+                }
               },
               child: Column(
                 children: [
@@ -176,13 +183,20 @@ class _VisitingProfileViewItemsState extends State<VisitingProfileViewItems> {
             ),
             InkWell(
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => FollowersAndFollowingView(
-                            user: ownerUser,
-                            visitingUser: user,
-                            choice: 'following')));
+                if (ownerUser.following.contains(user.userId) ||
+                    !user.isPrivate) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FollowersAndFollowingView(
+                              user: ownerUser,
+                              visitingUser: user,
+                              choice: 'following')));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      duration: Duration(seconds: 2),
+                      content: Text('Account is private!')));
+                }
               },
               child: Column(
                 children: [
